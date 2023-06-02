@@ -5,6 +5,12 @@ import kr.ac.konkuk.ccslab.cm.info.CMInfo;
 import kr.ac.konkuk.ccslab.cm.info.CMInteractionInfo;
 import kr.ac.konkuk.ccslab.cm.stub.CMClientStub;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
+
+import static java.nio.file.Files.createDirectory;
+
 public class CMWinClientEventHandler implements CMAppEventHandler {
 
 
@@ -65,6 +71,28 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
 
                     // Set the appearance of buttons in the client frame window
                     m_client.setButtonsAccordingToClientState();
+
+                    String s = interInfo.getMyself().getName();
+
+                    Path path = Paths.get("C:\\CMProject\\client-file-path");
+                    Path path1 = path.resolve(s);
+                    File file = new File(String.valueOf(path1));
+                    printMessage(String.valueOf(path1));
+
+
+                    if(!file.exists()) {
+                        if(file.mkdir() == true) {
+                            printMessage("클라이언트 폴더 생성됨");
+                        }
+                        else {
+                            printMessage("클라이언트 폴더 생성 실패");
+                        }
+                    }
+                    else {
+                        printMessage("클라이언트 폴더가 이미 존재합니다.");
+                    }
+
+
                 }
                 break;
         }
@@ -75,5 +103,9 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
 
         return;
     }
+
+
+
+
 
 }

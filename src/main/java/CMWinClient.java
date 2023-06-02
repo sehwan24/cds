@@ -1,4 +1,5 @@
 import kr.ac.konkuk.ccslab.cm.info.CMInfo;
+import kr.ac.konkuk.ccslab.cm.info.CMInteractionInfo;
 import kr.ac.konkuk.ccslab.cm.manager.CMCommManager;
 import kr.ac.konkuk.ccslab.cm.stub.CMClientStub;
 
@@ -9,11 +10,13 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 public class CMWinClient extends JFrame {
     private JTextPane jTextPane;
+    private JTextPane jTextPane2;
     private JTextField jTextField;
     private JButton m_startStopButton;
     private JButton m_loginLogoutButton;
@@ -42,27 +45,37 @@ public class CMWinClient extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //setMenus();
-        setLayout(new BorderLayout());
+        //setLayout(new BorderLayout());
+
+        jTextPane2 = new JTextPane();
+        jTextPane2.setBackground(new Color(0, 53, 254));
+        jTextPane2.setEditable(false);
+        jTextPane2.setPreferredSize(new Dimension(this.getWidth(), 400));
+        add(jTextPane2, BorderLayout.CENTER);
+        JScrollPane centerScroll = new JScrollPane (jTextPane2,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        //add(centerScroll);
+        getContentPane().add(centerScroll, BorderLayout.CENTER);
 
         jTextPane = new JTextPane();
-        jTextPane.setBackground(new Color(255, 255, 255));
+        jTextPane.setBackground(new Color(0, 253, 44));
         //m_outTextPane.setForeground(Color.WHITE);
         jTextPane.setEditable(false);
         jTextPane.setPreferredSize(new Dimension(this.getWidth(), 120));
 
         StyledDocument doc = jTextPane.getStyledDocument();
-        add(jTextPane, BorderLayout.CENTER);
-        JScrollPane centerScroll = new JScrollPane (jTextPane,
+        add(jTextPane, BorderLayout.SOUTH);
+        JScrollPane centerScroll2 = new JScrollPane (jTextPane,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         //add(centerScroll);
-        getContentPane().add(centerScroll, BorderLayout.SOUTH);
+        getContentPane().add(centerScroll2, BorderLayout.SOUTH);
 
         /*jTextField = new JTextField();
         jTextField.addKeyListener(myKeyListener);
         add(jTextField, BorderLayout.SOUTH);*/
 
         JPanel topButtonPanel = new JPanel();
-        topButtonPanel.setBackground(new Color(220,220,220));
+        topButtonPanel.setBackground(new Color(253, 0, 127));
         topButtonPanel.setLayout(new FlowLayout());
         add(topButtonPanel, BorderLayout.NORTH);
 
@@ -214,6 +227,19 @@ public class CMWinClient extends JFrame {
         return;
     }
 
+    public void printMessage2(String strText) {
+        StyledDocument styledDocument = jTextPane2.getStyledDocument();
+
+        try {
+            styledDocument.insertString(styledDocument.getLength(), strText, null);
+            jTextPane2.setCaretPosition(jTextPane2.getDocument().getLength());
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
+        return;
+    }
+
 
     public class MyActionListener implements ActionListener {
         @Override
@@ -239,7 +265,7 @@ public class CMWinClient extends JFrame {
             }
             else if (button.getText().equals("File Update"))
             {
-
+                fileUpdate();
             }
 
             //jTextField.requestFocus();
@@ -303,12 +329,35 @@ public class CMWinClient extends JFrame {
         setTitle("CM Client");
     }
 
+    private void fileUpdate() {
+        printFiles();
+    }
+
+    private void printFiles() {
+        CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
+        String s = interInfo.getMyself().getName();
+
+        Path path = Paths.get("C:\\CMProject\\client-file-path");
+        Path path1 = path.resolve(s);
+        File file = new File(String.valueOf(path1));
+        File[] fileList = file.listFiles();
+
+
+        if(fileList.length > 0) {
+            for(int i = 0; i < fileList.length; i++) {
+                printMessage2(String.valueOf(fileList[i])+"\n");
+            }
+        }
+    }
+
     private void initializeButtons() {
         m_startStopButton.setText("Start Client CM");
         m_loginLogoutButton.setText("Login");
         revalidate();
         repaint();
     }
+
+
 
 
     public class MyMouseListener implements MouseListener {
