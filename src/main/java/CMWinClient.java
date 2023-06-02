@@ -1,3 +1,5 @@
+import kr.ac.konkuk.ccslab.cm.info.CMInfo;
+import kr.ac.konkuk.ccslab.cm.manager.CMCommManager;
 import kr.ac.konkuk.ccslab.cm.stub.CMClientStub;
 
 import javax.swing.*;
@@ -7,12 +9,16 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class CMWinClient extends JFrame {
     private JTextPane jTextPane;
     private JTextField jTextField;
     private JButton m_startStopButton;
     private JButton m_loginLogoutButton;
+    private JButton fileUpdateButton;
+    private JButton fileTransferButton;
     private JButton m_composeSNSContentButton;
     private JButton m_readNewSNSContentButton;
     private JButton m_readNextSNSContentButton;
@@ -39,20 +45,21 @@ public class CMWinClient extends JFrame {
         setLayout(new BorderLayout());
 
         jTextPane = new JTextPane();
-        jTextPane.setBackground(new Color(245,245,245));
+        jTextPane.setBackground(new Color(255, 255, 255));
         //m_outTextPane.setForeground(Color.WHITE);
         jTextPane.setEditable(false);
+        jTextPane.setPreferredSize(new Dimension(this.getWidth(), 120));
 
         StyledDocument doc = jTextPane.getStyledDocument();
         add(jTextPane, BorderLayout.CENTER);
         JScrollPane centerScroll = new JScrollPane (jTextPane,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         //add(centerScroll);
-        getContentPane().add(centerScroll, BorderLayout.CENTER);
+        getContentPane().add(centerScroll, BorderLayout.SOUTH);
 
-        jTextField = new JTextField();
+        /*jTextField = new JTextField();
         jTextField.addKeyListener(myKeyListener);
-        add(jTextField, BorderLayout.SOUTH);
+        add(jTextField, BorderLayout.SOUTH);*/
 
         JPanel topButtonPanel = new JPanel();
         topButtonPanel.setBackground(new Color(220,220,220));
@@ -71,18 +78,95 @@ public class CMWinClient extends JFrame {
         m_loginLogoutButton.setEnabled(false);
         topButtonPanel.add(m_loginLogoutButton);
 
+        fileUpdateButton = new JButton("File Update");
+        fileUpdateButton.addActionListener(myActionListener);
+        fileUpdateButton.setEnabled(false);
+        topButtonPanel.add(fileUpdateButton);
+
+        fileTransferButton = new JButton("File Transfer");
+        fileTransferButton.addActionListener(myActionListener);
+        fileTransferButton.setEnabled(false);
+        topButtonPanel.add(fileTransferButton);
+
         setVisible(true);
 
         cmClientStub = new CMClientStub();
-        cmWinClientEventHandler = new CMWinClientEventHandler();
+        cmWinClientEventHandler = new CMWinClientEventHandler(cmClientStub, this);
 
         startCM();
 
-        jTextField.requestFocus();
+        //jTextField.requestFocus();
     }
 
 
     private void startCM() {
+        boolean bRet = false;
+
+        String serverAddress = null;
+        List<String> localAddressList = null;
+        int serverPort = -1;
+
+        cmClientStub.setConfigurationHome(Paths.get("."));
+        cmClientStub.setTransferedFileHome(cmClientStub.getConfigurationHome().resolve("client-file-path"));
+
+        localAddressList = CMCommManager.getLocalIPList();
+        if(localAddressList == null) {
+            System.err.println("Local address not found!");
+            return;
+        }
+
+        serverAddress = cmClientStub.getServerAddress();
+        serverPort = cmClientStub.getServerPort();
+
+        bRet = cmClientStub.startCM();
+        if(!bRet)
+        {
+            printMessage("CM initialization error!\n");
+        }
+        else
+        {
+            m_startStopButton.setEnabled(true);
+            m_loginLogoutButton.setEnabled(true);
+            printMessage("Client CM starts.\n");
+            // change the appearance of buttons in the client window frame
+            setButtonsAccordingToClientState();
+        }
+
+
+    }
+
+    public void setButtonsAccordingToClientState() {
+        int nClientState;
+        nClientState = cmClientStub.getCMInfo().getInteractionInfo().getMyself().getState();
+        System.out.println("nClientState = " + nClientState);
+
+        switch (nClientState){
+            case CMInfo.CM_INIT, CMInfo.CM_CONNECT:
+                m_startStopButton.setText("Stop Client CM");
+                m_loginLogoutButton.setText("Login");
+                break;
+            case CMInfo.CM_LOGIN, CMInfo.CM_SESSION_JOIN:
+                m_startStopButton.setText("Stop Client CM");
+                m_loginLogoutButton.setText("Logout");
+                fileUpdateButton.setEnabled(true);
+                fileTransferButton.setEnabled(true);
+                break;
+            default:
+                m_startStopButton.setText("Start Client CM");
+                m_loginLogoutButton.setText("Login");
+                break;
+        }
+        revalidate();
+        repaint();
+    }
+
+
+    private CMClientStub getCmClientStub() {
+        return cmClientStub;
+    }
+
+    private CMWinClientEventHandler getCmWinClientEventHandler() {
+        return cmWinClientEventHandler;
     }
 
 
@@ -117,7 +201,7 @@ public class CMWinClient extends JFrame {
         }
     }
 
-    private void printMessage(String strText) {
+    public void printMessage(String strText) {
         StyledDocument styledDocument = jTextPane.getStyledDocument();
 
         try {
@@ -135,67 +219,95 @@ public class CMWinClient extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             JButton button = (JButton)e.getSource();
-            /*if(button.getText().equals("Start Client CM"))
+            if(button.getText().equals("Start Client CM"))
             {
-                testStartCM();
+                startCM();
             }
             else if(button.getText().equals("Stop Client CM"))
             {
-                testTerminateCM();
+                TerminateCM();
             }
             else if(button.getText().equals("Login"))
             {
                 // login to the default cm server
-                testLoginDS();
+                LoginDS();
             }
             else if(button.getText().equals("Logout"))
             {
                 // logout from the default cm server
-                testLogoutDS();
+                LogoutDS();
             }
-            else if(button.equals(m_composeSNSContentButton))
+            else if (button.getText().equals("File Update"))
             {
-                testSNSContentUpload();
-            }
-            else if(button.equals(m_readNewSNSContentButton))
-            {
-                testDownloadNewSNSContent();
-            }
-            else if(button.equals(m_readNextSNSContentButton))
-            {
-                testDownloadNextSNSContent();
-            }
-            else if(button.equals(m_readPreviousSNSContentButton))
-            {
-                testDownloadPreviousSNSContent();
-            }
-            else if(button.equals(m_findUserButton))
-            {
-                testFindRegisteredUser();
-            }
-            else if(button.equals(m_addFriendButton))
-            {
-                testAddNewFriend();
-            }
-            else if(button.equals(m_removeFriendButton))
-            {
-                testRemoveFriend();
-            }
-            else if(button.equals(m_friendsButton))
-            {
-                testRequestFriendsList();
-            }
-            else if(button.equals(m_friendRequestersButton))
-            {
-                testRequestFriendRequestersList();
-            }
-            else if(button.equals(m_biFriendsButton))
-            {
-                testRequestBiFriendsList();
-            }*/
 
-            jTextField.requestFocus();
+            }
+
+            //jTextField.requestFocus();
         }
+    }
+
+    private void LogoutDS() {
+        boolean bRequestResult = false;
+        printMessage("Logout DS\n");
+        bRequestResult = cmClientStub.logoutCM();
+        if(bRequestResult)
+            printMessage("successfully sent the logout request.\n");
+        else
+            printMessage("failed the logout request.\n");
+
+        setButtonsAccordingToClientState();
+        setTitle("CM Client");
+    }
+
+    private void LoginDS() {
+        String username = null;
+        String password = null;
+        boolean bRequestResult = false;
+
+        printMessage("Login DS\n");
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        Object[] message = {
+                "username:", usernameField,
+                "password:", passwordField
+        };
+        int option = JOptionPane.showConfirmDialog(null, message, "Login Input", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION)
+        {
+            username = usernameField.getText();
+            password = new String(passwordField.getPassword()); // security problem?
+
+            cmWinClientEventHandler.setStartTime(System.currentTimeMillis());
+            bRequestResult = cmClientStub.loginCM(username, password);
+            long lDelay = System.currentTimeMillis() - cmWinClientEventHandler.getStartTime();
+            if(bRequestResult)
+            {
+                printMessage("successfully sent the login request.\n");
+                printMessage("return delay: "+lDelay+" ms.\n");
+                setButtonsAccordingToClientState();
+            }
+            else
+            {
+                printMessage("failed the login request!\n");
+                cmWinClientEventHandler.setStartTime(0);
+            }
+
+        };
+
+    }
+
+    private void TerminateCM() {
+        cmClientStub.terminateCM();
+        printMessage("Client CM terminates.\n");
+        initializeButtons();
+        setTitle("CM Client");
+    }
+
+    private void initializeButtons() {
+        m_startStopButton.setText("Start Client CM");
+        m_loginLogoutButton.setText("Login");
+        revalidate();
+        repaint();
     }
 
 
@@ -255,10 +367,10 @@ public class CMWinClient extends JFrame {
 
     private void requestAttachedFile(String strFileName) {
         boolean bRet = cmClientStub.requestAttachedFileOfSNSContent(strFileName);
-        /*if(bRet)
+        if(bRet)
             cmWinClientEventHandler.setReqAttachedFile(true);
         else
-            printMessage(strFileName+" not found in the downloaded content list!\n");*/
+            printMessage(strFileName+" not found in the downloaded content list!\n");
 
         return;
     }
@@ -271,6 +383,13 @@ public class CMWinClient extends JFrame {
             printMessage(strFileName+" not found in the downloaded content list!\n");
 
         return;
+    }
+
+
+    public static void main(String[] args) {
+        CMWinClient cmWinClient = new CMWinClient();
+        CMClientStub cmClientStub1 = cmWinClient.getCmClientStub();
+        cmClientStub1.setAppEventHandler(cmWinClient.getCmWinClientEventHandler());
     }
 
 

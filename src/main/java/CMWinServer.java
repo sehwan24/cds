@@ -1,3 +1,4 @@
+import kr.ac.konkuk.ccslab.cm.manager.CMCommManager;
 import kr.ac.konkuk.ccslab.cm.stub.CMServerStub;
 
 import javax.swing.*;
@@ -8,51 +9,54 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class CMWinServer extends JFrame {
 
 
     private JTextPane jTextPane;
     private JTextField jTextField;
-    private JButton cmStartButton;
+    private JButton cmStartStopButton;
     private CMServerStub cmServerStub;
     private CMWinServerEventHandler cmWinServerEventHandler;
 
 
     CMWinServer() {
-        MyKeyListener myKeyListener = new MyKeyListener();
+        //MyKeyListener myKeyListener = new MyKeyListener();
         MyActionListener myActionListener = new MyActionListener();
         setTitle("CM Server");
-        setSize(500,500);
+        setSize(600,600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
 
         jTextPane = new JTextPane();
         jTextPane.setEditable(false);
+        jTextPane.setPreferredSize(new Dimension(this.getWidth(), 120));
 
         StyledDocument styledDocument = jTextPane.getStyledDocument();
-        add(jTextPane, BorderLayout.CENTER);
+        add(jTextPane, BorderLayout.SOUTH);
         JScrollPane jScrollPane = new JScrollPane();
         add(jScrollPane);
 
-        jTextField = new JTextField();
+        /*jTextField = new JTextField();
         jTextField.addKeyListener(myKeyListener);
-        add(jTextField, BorderLayout.SOUTH);
+        add(jTextField, BorderLayout.SOUTH);*/
 
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new FlowLayout());
         add(jPanel, BorderLayout.NORTH);
 
-        cmStartButton = new JButton("Start Server CM");
-        cmStartButton.addActionListener(myActionListener);
-        cmStartButton.setEnabled(false);
-        jPanel.add(cmStartButton);
+        cmStartStopButton = new JButton("Start Server CM");
+        cmStartStopButton.addActionListener(myActionListener);
+        cmStartStopButton.setEnabled(false);
+        jPanel.add(cmStartStopButton);
 
         setVisible(true);
 
         cmServerStub = new CMServerStub();
-        cmWinServerEventHandler = new CMWinServerEventHandler();
+        cmWinServerEventHandler = new CMWinServerEventHandler(cmServerStub, this);
 
         startCM();
 
@@ -68,7 +72,7 @@ public class CMWinServer extends JFrame {
 
 
 
-    public class MyKeyListener implements KeyListener {
+    /*public class MyKeyListener implements KeyListener {
         @Override
         public void keyPressed(KeyEvent e) {
             int key = e.getKeyCode();
@@ -92,7 +96,7 @@ public class CMWinServer extends JFrame {
         public void keyTyped(KeyEvent e) {
 
         }
-    }
+    }*/
 
     public class MyActionListener implements ActionListener {
         @Override
@@ -106,7 +110,6 @@ public class CMWinServer extends JFrame {
                 }
                 else {
                     printMessage("CM init success\n");
-                    printMessage("Type \"0\" for menu.\n");
                     button.setText("Stop Server CM");
                 }
                 jTextField.requestFocus();
@@ -119,6 +122,42 @@ public class CMWinServer extends JFrame {
     }
 
     public void startCM() {
+        boolean bRet = false;
+
+        String serverAddress = null;
+        List<String> localAddressList = null;
+        int serverPort = -1;
+
+
+        cmServerStub.setConfigurationHome(Paths.get("."));
+        cmServerStub.setTransferedFileHome(cmServerStub.getConfigurationHome().resolve("server-file-path"));
+
+        localAddressList = CMCommManager.getLocalIPList();
+        if(localAddressList == null) {
+            System.err.println("Local address not found!");
+            return;
+        }
+
+        serverAddress = cmServerStub.getServerAddress();
+        serverPort = cmServerStub.getServerPort();
+
+        bRet = cmServerStub.startCM();
+        if(!bRet)
+        {
+            printMessage("CM initialization error!\n");
+        }
+        else
+        {
+            printMessage("Server CM starts.\n");
+            //printMessage("Type \"0\" for menu.\n");
+            // change button to "stop CM"
+            cmStartStopButton.setEnabled(true);
+            cmStartStopButton.setText("Stop Server CM");
+        }
+
+        //jTextField.requestFocus();
+
+
 
     }
 
@@ -135,7 +174,7 @@ public class CMWinServer extends JFrame {
     }
 
 
-    public void processInput(String strInput) {
+   /* public void processInput(String strInput) {
         int nCommand = -1;
         try {
             nCommand = Integer.parseInt(strInput);
@@ -155,7 +194,7 @@ public class CMWinServer extends JFrame {
                 printMessage("Unknown command.\n");
                 break;
         }
-    }
+    }*/
 
     /*public void setMenus() {
         MyMenuListener menuListener = new MyMenuListener();
