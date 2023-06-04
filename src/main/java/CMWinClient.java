@@ -1,3 +1,4 @@
+import kr.ac.konkuk.ccslab.cm.event.CMDummyEvent;
 import kr.ac.konkuk.ccslab.cm.info.CMInfo;
 import kr.ac.konkuk.ccslab.cm.info.CMInteractionInfo;
 import kr.ac.konkuk.ccslab.cm.manager.CMCommManager;
@@ -10,8 +11,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.*;
 import java.util.List;
 
 public class CMWinClient extends JFrame {
@@ -20,9 +21,9 @@ public class CMWinClient extends JFrame {
     private JTextField jTextField;
     private JButton m_startStopButton;
     private JButton m_loginLogoutButton;
-    private JButton fileUpdateButton;
+    private JButton printFilesButton;
     private JButton fileTransferButton;
-    private JButton m_composeSNSContentButton;
+    private JButton fileUpdateButton;
     private JButton m_readNewSNSContentButton;
     private JButton m_readNextSNSContentButton;
     private JButton m_readPreviousSNSContentButton;
@@ -35,6 +36,11 @@ public class CMWinClient extends JFrame {
     private MyMouseListener myMouseListener;
     private CMClientStub cmClientStub;
     private CMWinClientEventHandler cmWinClientEventHandler;
+    private int clientlogicalclock;
+
+    String[][] array = new String[50][2];
+
+
 
     CMWinClient() {
         MyKeyListener myKeyListener = new MyKeyListener();
@@ -91,6 +97,11 @@ public class CMWinClient extends JFrame {
         m_loginLogoutButton.setEnabled(false);
         topButtonPanel.add(m_loginLogoutButton);
 
+        printFilesButton = new JButton("Print Files");
+        printFilesButton.addActionListener(myActionListener);
+        printFilesButton.setEnabled(false);
+        topButtonPanel.add(printFilesButton);
+
         fileUpdateButton = new JButton("File Update");
         fileUpdateButton.addActionListener(myActionListener);
         fileUpdateButton.setEnabled(false);
@@ -107,6 +118,7 @@ public class CMWinClient extends JFrame {
         cmWinClientEventHandler = new CMWinClientEventHandler(cmClientStub, this);
 
         startCM();
+
 
         //jTextField.requestFocus();
     }
@@ -146,6 +158,7 @@ public class CMWinClient extends JFrame {
         }
 
 
+
     }
 
     public void setButtonsAccordingToClientState() {
@@ -161,6 +174,7 @@ public class CMWinClient extends JFrame {
             case CMInfo.CM_LOGIN, CMInfo.CM_SESSION_JOIN:
                 m_startStopButton.setText("Stop Client CM");
                 m_loginLogoutButton.setText("Logout");
+                printFilesButton.setEnabled(true);
                 fileUpdateButton.setEnabled(true);
                 fileTransferButton.setEnabled(true);
                 break;
@@ -263,9 +277,13 @@ public class CMWinClient extends JFrame {
                 // logout from the default cm server
                 LogoutDS();
             }
-            else if (button.getText().equals("File Update"))
+            else if(button.getText().equals("File Update"))
             {
                 fileUpdate();
+            }
+            else if (button.getText().equals("Print Files"))
+            {
+                printFiles();
             }
 
             //jTextField.requestFocus();
@@ -329,11 +347,155 @@ public class CMWinClient extends JFrame {
         setTitle("CM Client");
     }
 
-    private void fileUpdate() {
-        printFiles();
+    public void PushFile()
+    {
+        Scanner scanner = new Scanner(System.in);
+        printMessage("====== select files to send: ");
+        Path transferHome = cmClientStub.getTransferedFileHome();
+        JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fc.setMultiSelectionEnabled(true);
+        fc.setCurrentDirectory(transferHome.toFile());
+        int fcRet = fc.showOpenDialog(null);
+        if(fcRet != JFileChooser.APPROVE_OPTION) return;
+        File[] files = fc.getSelectedFiles();
+
+        for(File file : files)
+            printMessage("selected file = " + file);
+        if(files.length < 1) {
+            printMessage("No file selected!");
+            return;
+        }
+
+        printMessage("Receiver of files: ");
+        printMessage("Type \"SERVER\" for the server. ");
+        String receiver = scanner.nextLine().trim();
+
+        for(File file : files)
+            cmClientStub.pushFile(file.getPath(), "SERVER");
     }
 
-    private void printFiles() {
+
+    int i = 0;
+    int n, m;
+    public void fileUpdate() {
+
+        CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
+        String s = interInfo.getMyself().getName();
+
+        Path path = Paths.get("C:\\CMProject\\client-file-path");
+        Path path1 = path.resolve(s);
+
+        WatchService watchService = null;
+        try {
+            watchService = FileSystems.getDefault().newWatchService();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            path1.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        long start = System.currentTimeMillis();
+        Path serverPath = Paths.get("C:\\CMProject\\server-file-path");
+        Path path2 = serverPath.resolve(s);
+
+        while(true) {
+            WatchKey key = null;
+            try {
+                key = watchService.take();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            List<WatchEvent<?>> list = key.pollEvents();
+            for (WatchEvent<?> event : list) {
+                WatchEvent.Kind<?> kind = event.kind();
+                Path pth = (Path) event.context();
+                Path path3 = path2.resolve(pth);
+                Path path4 = path1.resolve(pth);
+                if (kind.equals(StandardWatchEventKinds.ENTRY_CREATE)) {
+                    //파일 생성 시
+                    printMessage(pth.getFileName() + " 생성\n");
+                    CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                    array[i][0] = String.valueOf(pth.getFileName());
+                    printMessage(array[i][0]+ "\n");
+                    array[i][1] = String.valueOf(1);
+                    printMessage(array[i][1]+ "\n");
+                    cmDummyEvent.setDummyInfo(String.valueOf(i) +" "+ array[i][0] +" " + array[i][1]);
+                    cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
+                    if(Files.exists(path3)){
+                        printMessage("동기화 실패");
+                        if(Files.isRegularFile(path3)) {
+                            printMessage("서버에 동일한 파일이 존재합니다.\n");
+                        }
+                    }
+                    else {
+                        printMessage(String.valueOf(path4));
+                        cmClientStub.pushFile(String.valueOf(path4), "SERVER");
+                        printMessage("동기화 성공1");
+                    }
+                    i++;
+                    printMessage(String.valueOf(i));
+                    return;
+                } else if (kind.equals(StandardWatchEventKinds.ENTRY_DELETE)) {
+                    //파일 삭제 시
+                    printMessage(pth.getFileName() + " 삭제\n");
+                    int indexnum = Arrays.asList(array).indexOf(pth.getFileName());
+                    if(clientlogicalclock < CMWinServer.serverlogicalclock) {
+                        printMessage("동기화 실패");
+                    }
+                    else {
+                        //cmClientStub.pushFile(String.valueOf(path4),"SERVER");
+                    }
+                    return;
+                } else if (kind.equals(StandardWatchEventKinds.ENTRY_MODIFY)) {
+                    //파일 수정 시
+                    printMessage(pth.getFileName() + " 수정\n");
+                    CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                    for(int k = 0; k < 50; k++) {  //몇 번 파일 수정됐나 확인
+                        if(String.valueOf(pth.getFileName()).equals(array[k][0])){    //클라이언트
+                            array[k][1] = String.valueOf(Integer.valueOf(array[k][1])+1);  //로지컬 클락 업데이트
+                            printMessage("\n"+array[k][0]+"\n"+array[k][1]+"\n");
+                            n = k;
+                        }
+                    }
+                    cmDummyEvent.setDummyInfo(String.valueOf(n) +" "+ array[n][0] +" " + array[n][1]);
+                    cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName()); //서버와 통신
+
+
+
+                    return;
+                }
+            }
+            if(!key.reset()) break;
+
+
+        }
+        try {
+            watchService.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public class LogicalClock {
+        String s;
+        int logicalClock;
+
+        public LogicalClock(String s, int logicalClock) {
+            this.s = s;
+            this.logicalClock = logicalClock;
+        }
+    }
+
+
+
+
+
+
+    public void printFiles() {
         CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
         String s = interInfo.getMyself().getName();
 
@@ -348,6 +510,8 @@ public class CMWinClient extends JFrame {
                 printMessage2(String.valueOf(fileList[i])+"\n");
             }
         }
+
+        printMessage2("--------------------------\nCL : "+clientlogicalclock);
     }
 
     private void initializeButtons() {
@@ -439,6 +603,7 @@ public class CMWinClient extends JFrame {
         CMWinClient cmWinClient = new CMWinClient();
         CMClientStub cmClientStub1 = cmWinClient.getCmClientStub();
         cmClientStub1.setAppEventHandler(cmWinClient.getCmWinClientEventHandler());
+
     }
 
 

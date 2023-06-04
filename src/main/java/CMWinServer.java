@@ -1,3 +1,4 @@
+import kr.ac.konkuk.ccslab.cm.info.CMInteractionInfo;
 import kr.ac.konkuk.ccslab.cm.manager.CMCommManager;
 import kr.ac.konkuk.ccslab.cm.stub.CMServerStub;
 
@@ -9,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -16,10 +19,15 @@ public class CMWinServer extends JFrame {
 
 
     private JTextPane jTextPane;
+    private JTextPane jTextPane2;
     private JTextField jTextField;
     private JButton cmStartStopButton;
+    private JButton printFilesButton;
     private CMServerStub cmServerStub;
     private CMWinServerEventHandler cmWinServerEventHandler;
+    public static int serverlogicalclock;
+
+
 
 
     CMWinServer() {
@@ -31,14 +39,25 @@ public class CMWinServer extends JFrame {
 
         setLayout(new BorderLayout());
 
+        jTextPane2 = new JTextPane();
+        jTextPane2.setBackground(new Color(0, 53, 254));
+        jTextPane2.setEditable(false);
+        jTextPane2.setPreferredSize(new Dimension(this.getWidth(), 400));
+        add(jTextPane2, BorderLayout.CENTER);
+        JScrollPane centerScroll = new JScrollPane (jTextPane2,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        //add(centerScroll);
+        getContentPane().add(centerScroll, BorderLayout.CENTER);
+
         jTextPane = new JTextPane();
+        jTextPane.setBackground(new Color(132, 253, 1));
         jTextPane.setEditable(false);
         jTextPane.setPreferredSize(new Dimension(this.getWidth(), 120));
 
-        StyledDocument styledDocument = jTextPane.getStyledDocument();
         add(jTextPane, BorderLayout.SOUTH);
-        JScrollPane jScrollPane = new JScrollPane();
-        add(jScrollPane);
+        JScrollPane jScrollPane = new JScrollPane(jTextPane,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        getContentPane().add(jScrollPane, BorderLayout.SOUTH);
 
         /*jTextField = new JTextField();
         jTextField.addKeyListener(myKeyListener);
@@ -52,6 +71,11 @@ public class CMWinServer extends JFrame {
         cmStartStopButton.addActionListener(myActionListener);
         cmStartStopButton.setEnabled(false);
         jPanel.add(cmStartStopButton);
+
+        printFilesButton = new JButton("Print Files");
+        printFilesButton.addActionListener(myActionListener);
+        printFilesButton.setEnabled(false);
+        jPanel.add(printFilesButton);
 
         setVisible(true);
 
@@ -72,31 +96,34 @@ public class CMWinServer extends JFrame {
 
 
 
-    /*public class MyKeyListener implements KeyListener {
-        @Override
-        public void keyPressed(KeyEvent e) {
-            int key = e.getKeyCode();
-            if(key == KeyEvent.VK_ENTER) {
-                JTextField input = (JTextField)e.getSource();
-                String strText = input.getText();
-                printMessage(strText+"\n");
-                //CM시작
-                processInput(strText);
-                input.setText("");
-                input.requestFocus();
+
+
+    public void printFiles() {
+        Path path = Paths.get("C:\\CMProject\\server-file-path");
+        File file = new File(String.valueOf(path));
+        File[] fileList = file.listFiles();
+
+        if(fileList.length > 0) {
+            for(int i = 0; i < fileList.length; i++) {
+                printMessage2(String.valueOf(fileList[i])+"\n");
             }
         }
 
-        @Override
-        public void keyReleased(KeyEvent e) {
+        printMessage2("--------------------------\nSL: "+ serverlogicalclock);
+    }
 
+    private void printMessage2(String strText) {
+        StyledDocument styledDocument = jTextPane2.getStyledDocument();
+
+        try {
+            styledDocument.insertString(styledDocument.getLength(), strText, null);
+            jTextPane2.setCaretPosition(jTextPane2.getDocument().getLength());
+        } catch (BadLocationException e) {
+            e.printStackTrace();
         }
 
-        @Override
-        public void keyTyped(KeyEvent e) {
-
-        }
-    }*/
+        return;
+    }
 
     public class MyActionListener implements ActionListener {
         @Override
@@ -112,11 +139,18 @@ public class CMWinServer extends JFrame {
                     printMessage("CM init success\n");
                     button.setText("Stop Server CM");
                 }
-                jTextField.requestFocus();
-            } else if (button.getText().equals("Stop Server CM")) {
+                //jTextField.requestFocus();
+            }
+            else if (button.getText().equals("Stop Server CM"))
+            {
                 cmServerStub.terminateCM();
+                printFilesButton.setEnabled(false);
                 printMessage("Server CM terminates.\n");
                 button.setText("Start Server CM");
+            }
+            else if (button.getText().equals("Print Files"))
+            {
+                printFiles();
             }
         }
     }
@@ -152,8 +186,10 @@ public class CMWinServer extends JFrame {
             //printMessage("Type \"0\" for menu.\n");
             // change button to "stop CM"
             cmStartStopButton.setEnabled(true);
+            printFilesButton.setEnabled(true);
             cmStartStopButton.setText("Stop Server CM");
         }
+
 
         //jTextField.requestFocus();
 

@@ -1,4 +1,6 @@
+import kr.ac.konkuk.ccslab.cm.event.CMDummyEvent;
 import kr.ac.konkuk.ccslab.cm.event.CMEvent;
+import kr.ac.konkuk.ccslab.cm.event.CMFileEvent;
 import kr.ac.konkuk.ccslab.cm.event.CMSessionEvent;
 import kr.ac.konkuk.ccslab.cm.event.handler.CMAppEventHandler;
 import kr.ac.konkuk.ccslab.cm.info.CMInfo;
@@ -48,7 +50,55 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             case CMInfo.CM_SESSION_EVENT:
                 processSessionEvent(cmEvent);
                 break;
+            case CMInfo.CM_FILE_EVENT:
+                processFileEvent(cmEvent);
+                break;
+            case CMInfo.CM_DUMMY_EVENT:
+                processDummyEvent(cmEvent);
+            default:
+                break;
         }
+    }
+
+    private void processDummyEvent(CMEvent cmEvent)
+    {
+        CMDummyEvent due = (CMDummyEvent) cmEvent;
+        //System.out.println("session("+due.getHandlerSession()+"), group("+due.getHandlerGroup()+")");
+        printMessage("session("+due.getHandlerSession()+"), group("+due.getHandlerGroup()+")\n");
+        //System.out.println("dummy msg: "+due.getDummyInfo());
+        printMessage("["+due.getSender()+"] sent a dummy msg: "+due.getDummyInfo()+"\n");
+
+        String s = due.getDummyInfo();
+        String[] strArray = s.split(" ");
+        if(String.valueOf(strArray[0]).equals("Y")){
+            printMessage("동기화 성공");
+            Path path = Paths.get("C:\\CMProject\\client-file-path");
+            CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+            String s1 = interInfo.getMyself().getName();
+            Path path2 = path.resolve(s1);
+            Path path4 = path2.resolve(strArray[1]);
+            m_clientStub.pushFile(String.valueOf(path4), "SERVER");
+        }
+        else if(String.valueOf(strArray[0]).equals("N")){
+            printMessage("동기화 실패");
+        }
+
+        return;
+    }
+
+
+    private void processFileEvent(CMEvent cmEvent)
+    {
+        CMFileEvent fe = (CMFileEvent) cmEvent;
+        int nOption = -1;
+        switch(fe.getID())
+        {
+            case CMFileEvent.END_FILE_TRANSFER_ACK:
+                printMessage("End file transfer!!!");
+                break;
+
+        }
+        return;
     }
 
     private void processSessionEvent(CMEvent cme) {
@@ -82,14 +132,14 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
 
                     if(!file.exists()) {
                         if(file.mkdir() == true) {
-                            printMessage("클라이언트 폴더 생성됨");
+                            printMessage("클라이언트 폴더 생성됨\n");
                         }
                         else {
-                            printMessage("클라이언트 폴더 생성 실패");
+                            printMessage("클라이언트 폴더 생성 실패\n");
                         }
                     }
                     else {
-                        printMessage("클라이언트 폴더가 이미 존재합니다.");
+                        printMessage("클라이언트 폴더가 이미 존재합니다.\n");
                     }
 
 
