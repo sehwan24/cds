@@ -285,6 +285,9 @@ public class CMWinClient extends JFrame {
             {
                 printFiles();
             }
+            else if (button.getText().equals("File Transfer")) {
+                fileTransfer();
+            }
 
             //jTextField.requestFocus();
         }
@@ -347,33 +350,6 @@ public class CMWinClient extends JFrame {
         setTitle("CM Client");
     }
 
-    public void PushFile()
-    {
-        Scanner scanner = new Scanner(System.in);
-        printMessage("====== select files to send: ");
-        Path transferHome = cmClientStub.getTransferedFileHome();
-        JFileChooser fc = new JFileChooser();
-        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        fc.setMultiSelectionEnabled(true);
-        fc.setCurrentDirectory(transferHome.toFile());
-        int fcRet = fc.showOpenDialog(null);
-        if(fcRet != JFileChooser.APPROVE_OPTION) return;
-        File[] files = fc.getSelectedFiles();
-
-        for(File file : files)
-            printMessage("selected file = " + file);
-        if(files.length < 1) {
-            printMessage("No file selected!");
-            return;
-        }
-
-        printMessage("Receiver of files: ");
-        printMessage("Type \"SERVER\" for the server. ");
-        String receiver = scanner.nextLine().trim();
-
-        for(File file : files)
-            cmClientStub.pushFile(file.getPath(), "SERVER");
-    }
 
 
     int i = 0;
@@ -483,18 +459,25 @@ public class CMWinClient extends JFrame {
         }
     }
 
-    public class LogicalClock {
-        String s;
-        int logicalClock;
 
-        public LogicalClock(String s, int logicalClock) {
-            this.s = s;
-            this.logicalClock = logicalClock;
+    private void fileTransfer() {
+        CMDummyEvent cmDummyEvent = new CMDummyEvent();
+        cmDummyEvent.setDummyInfo("Transfer");
+        cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
+
+        String strusername = null;
+        JTextField user = new JTextField();
+
+        Object[] message = {
+                "user:", user
+        };
+        int option = JOptionPane.showConfirmDialog(null, message, "User Input", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            strusername = user.getText();
         }
+        printMessage(strusername);
+
     }
-
-
-
 
 
 

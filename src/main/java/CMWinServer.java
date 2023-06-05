@@ -25,7 +25,6 @@ public class CMWinServer extends JFrame {
     private JButton printFilesButton;
     private CMServerStub cmServerStub;
     private CMWinServerEventHandler cmWinServerEventHandler;
-    public static int serverlogicalclock;
 
 
 
@@ -109,7 +108,6 @@ public class CMWinServer extends JFrame {
             }
         }
 
-        printMessage2("--------------------------\nSL: "+ serverlogicalclock);
     }
 
     private void printMessage2(String strText) {

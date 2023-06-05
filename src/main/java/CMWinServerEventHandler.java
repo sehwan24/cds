@@ -1,3 +1,5 @@
+import kr.ac.konkuk.ccslab.cm.entity.CMMember;
+import kr.ac.konkuk.ccslab.cm.entity.CMUser;
 import kr.ac.konkuk.ccslab.cm.event.CMDummyEvent;
 import kr.ac.konkuk.ccslab.cm.event.CMEvent;
 import kr.ac.konkuk.ccslab.cm.event.CMFileEvent;
@@ -12,6 +14,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Vector;
 
 public class CMWinServerEventHandler implements CMAppEventHandler {
 
@@ -86,6 +90,31 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
         printMessage("["+due.getSender()+"] sent a dummy msg: "+due.getDummyInfo()+"\n");
         String s = due.getDummyInfo();
         printMessage(s);
+
+        if(String.valueOf(s).equals(String.valueOf("Transfer"))) {  //파일 전송 이벤트 받음
+            CMMember loginUsers = m_serverStub.getLoginUsers();
+            if(loginUsers == null)
+            {
+                printMessage("The login users list is null!\n");
+                return;
+            }
+            Vector<CMUser> loginUserVector = loginUsers.getAllMembers();
+            Iterator<CMUser> iter = loginUserVector.iterator();
+            CMDummyEvent cmDummyEvent = new CMDummyEvent();
+            String s1 = "Transfer§";
+            int f = 0;
+            while(iter.hasNext())
+            {
+                CMUser user = iter.next();
+                String s2 = String.valueOf(user.getName());
+                s1 = s1 + s2 + "§";
+                f++;
+            }
+            s1 = s1 + String.valueOf(f);
+            cmDummyEvent.setDummyInfo(s1);
+            m_serverStub.send(cmDummyEvent, due.getSender());
+
+        }
 
         String[] strArray = s.split("§");
         String v = String.valueOf(strArray[0]);

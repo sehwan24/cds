@@ -69,7 +69,17 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
         printMessage("["+due.getSender()+"] sent a dummy msg: "+due.getDummyInfo()+"\n");
 
         String s = due.getDummyInfo();
+
         String[] strArray = s.split("§");
+
+        if(String.valueOf(strArray[0]).equals("Transfer")) {
+            int length = strArray.length;
+            printMessage("Online User List:\n");
+            for(int h = 0; h < (length-2); h++) {
+                printMessage(strArray[1 + h] + "  ");
+            }
+        }
+
         if(String.valueOf(strArray[1]).equals("Y")){
             if(String.valueOf(strArray[0]).equals("M")) {
                 printMessage("수정 동기화 성공\n");
