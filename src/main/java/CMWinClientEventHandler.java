@@ -69,18 +69,25 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
         printMessage("["+due.getSender()+"] sent a dummy msg: "+due.getDummyInfo()+"\n");
 
         String s = due.getDummyInfo();
-        String[] strArray = s.split(" ");
-        if(String.valueOf(strArray[0]).equals("Y")){
-            printMessage("동기화 성공");
-            Path path = Paths.get("C:\\CMProject\\client-file-path");
-            CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
-            String s1 = interInfo.getMyself().getName();
-            Path path2 = path.resolve(s1);
-            Path path4 = path2.resolve(strArray[1]);
-            m_clientStub.pushFile(String.valueOf(path4), "SERVER");
+        String[] strArray = s.split("§");
+        if(String.valueOf(strArray[1]).equals("Y")){
+            if(String.valueOf(strArray[0]).equals("M")) {
+                printMessage("수정 동기화 성공\n");
+                Path path = Paths.get("C:\\CMProject\\client-file-path");
+                CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+                String s1 = interInfo.getMyself().getName();
+                Path path2 = path.resolve(s1);
+                Path path4 = path2.resolve(strArray[2]);
+                //path4 print go
+                m_clientStub.pushFile(String.valueOf(path4), "SERVER");
+            }
+            else if (String.valueOf(strArray[0]).equals("D"))
+            {
+                printMessage("삭제 동기화 성공\n");
+            }
         }
-        else if(String.valueOf(strArray[0]).equals("N")){
-            printMessage("동기화 실패");
+        else if(String.valueOf(strArray[1]).equals("N")){
+            printMessage("동기화 실패\n");
         }
 
         return;

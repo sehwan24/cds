@@ -383,8 +383,8 @@ public class CMWinClient extends JFrame {
         CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
         String s = interInfo.getMyself().getName();
 
-        Path path = Paths.get("C:\\CMProject\\client-file-path");
-        Path path1 = path.resolve(s);
+        Path path0 = Paths.get("C:\\CMProject\\client-file-path");
+        Path path1 = path0.resolve(s);
 
         WatchService watchService = null;
         try {
@@ -423,10 +423,10 @@ public class CMWinClient extends JFrame {
                     printMessage(array[i][0]+ "\n");
                     array[i][1] = String.valueOf(1);
                     printMessage(array[i][1]+ "\n");
-                    cmDummyEvent.setDummyInfo(String.valueOf(i) +" "+ array[i][0] +" " + array[i][1]);
+                    cmDummyEvent.setDummyInfo("C" + "§" + String.valueOf(i) +"§"+ array[i][0] +"§" + array[i][1]);
                     cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
                     if(Files.exists(path3)){
-                        printMessage("동기화 실패");
+                        printMessage("동기화 실패\n");
                         if(Files.isRegularFile(path3)) {
                             printMessage("서버에 동일한 파일이 존재합니다.\n");
                         }
@@ -434,7 +434,7 @@ public class CMWinClient extends JFrame {
                     else {
                         printMessage(String.valueOf(path4));
                         cmClientStub.pushFile(String.valueOf(path4), "SERVER");
-                        printMessage("동기화 성공1");
+                        printMessage("동기화 성공1\n");
                     }
                     i++;
                     printMessage(String.valueOf(i));
@@ -442,13 +442,18 @@ public class CMWinClient extends JFrame {
                 } else if (kind.equals(StandardWatchEventKinds.ENTRY_DELETE)) {
                     //파일 삭제 시
                     printMessage(pth.getFileName() + " 삭제\n");
-                    int indexnum = Arrays.asList(array).indexOf(pth.getFileName());
-                    if(clientlogicalclock < CMWinServer.serverlogicalclock) {
-                        printMessage("동기화 실패");
+                    CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                    for(int k = 0; k < 50; k++) {  //몇 번 파일 삭제됐나 확인
+                        if(String.valueOf(pth.getFileName()).equals(array[k][0])){    //클라이언트
+                            array[k][1] = String.valueOf(Integer.valueOf(array[k][1])+1);  //로지컬 클락 업데이트
+                            printMessage("\n"+array[k][0]+"\n"+array[k][1]+"\n");
+                            n = k;
+                        }
                     }
-                    else {
-                        //cmClientStub.pushFile(String.valueOf(path4),"SERVER");
-                    }
+                    cmDummyEvent.setDummyInfo("D" + "§" + String.valueOf(n) +"§"+ array[n][0] +"§" + array[n][1]);
+                    cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName()); //서버와 통신
+                    array[n][0] = null;
+                    array[n][1] = null;  //삭제했으니 파일명, 로지컬 클락 배열 초기화
                     return;
                 } else if (kind.equals(StandardWatchEventKinds.ENTRY_MODIFY)) {
                     //파일 수정 시
@@ -461,10 +466,8 @@ public class CMWinClient extends JFrame {
                             n = k;
                         }
                     }
-                    cmDummyEvent.setDummyInfo(String.valueOf(n) +" "+ array[n][0] +" " + array[n][1]);
-                    cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName()); //서버와 통신
-
-
+                    cmDummyEvent.setDummyInfo("M" + "§" + String.valueOf(n) +"§"+ array[n][0] +"§" + array[n][1]);
+                    cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
 
                     return;
                 }

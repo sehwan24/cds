@@ -8,6 +8,9 @@ import kr.ac.konkuk.ccslab.cm.info.CMInfo;
 import kr.ac.konkuk.ccslab.cm.manager.CMDBManager;
 import kr.ac.konkuk.ccslab.cm.stub.CMServerStub;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class CMWinServerEventHandler implements CMAppEventHandler {
@@ -84,43 +87,69 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
         String s = due.getDummyInfo();
         printMessage(s);
 
-        String[] strArray = s.split(" ");
-        i1 = Integer.valueOf(strArray[0]);  //i
+        String[] strArray = s.split("§");
+        String v = String.valueOf(strArray[0]);
+        i1 = Integer.valueOf(strArray[1]);  //i
         printMessage(String.valueOf(i1) + "\n");
-        c_array[i1][0] = strArray[1];  //파일이름
+        c_array[i1][0] = strArray[2];  //파일이름
         printMessage(c_array[i1][0] + "\n");
-        c_array[i1][1] = strArray[2];  //로지컬 클락
+        c_array[i1][1] = strArray[3];  //로지컬 클락
         printMessage(c_array[i1][1] +"\n");
         a = 0;
 
+
         for(int u = 0; u < 200; u++) {
             if(String.valueOf(array2[u][0]).equals(String.valueOf(c_array[i1][0]))) { //서버에 파일이 존재하면 서버 업데이트
-                printMessage("9\n");
-                if(Integer.valueOf(array2[u][1]) > Integer.valueOf(c_array[i1][1])){ //서버 로지컬 클락이 더 클 경우
-                    printMessage("8\n");
-                    CMDummyEvent cmDummyEvent = new CMDummyEvent();
-                    cmDummyEvent.setDummyInfo("N");
-                    m_serverStub.send(cmDummyEvent, due.getSender());
+                if(String.valueOf(v).equals(String.valueOf("M"))) {   //수정인 경우
+                    if (Integer.valueOf(array2[u][1]) > Integer.valueOf(c_array[i1][1])) { //서버 로지컬 클락이 더 클 경우
+                        CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                        cmDummyEvent.setDummyInfo("M§N");
+                        m_serverStub.send(cmDummyEvent, due.getSender());
+                    } else {
+                        array2[u][1] = String.valueOf(Integer.valueOf(c_array[i1][1]) + 1); //서버 로지컬 클락 업데이트
+                        printMessage("99\n");
+                        CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                        cmDummyEvent.setDummyInfo("M§Y§" + c_array[i1][0]);
+                        m_serverStub.send(cmDummyEvent, due.getSender());
+                    }
+                    a = 1;
+                    printMessage(array2[u][0] + "\n" + array2[u][1] + "\n");
                 }
-                else{
-                    printMessage("7\n");
-                    array2[u][1] = String.valueOf(Integer.valueOf(c_array[i1][1]) + 1); //서버 로지컬 클락 업데이트
-                    CMDummyEvent cmDummyEvent = new CMDummyEvent();
-                    cmDummyEvent.setDummyInfo("Y "+c_array[i1][0]);
-                    m_serverStub.send(cmDummyEvent, due.getSender());
+                else if (String.valueOf(v).equals(String.valueOf("D"))) {  //삭제인 경우
+                    if (Integer.valueOf(array2[u][1]) > Integer.valueOf(c_array[i1][1])) { //서버 로지컬 클락이 더 클 경우
+                        printMessage("동기화 실패\n");
+                        CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                        cmDummyEvent.setDummyInfo("D§N");
+                        m_serverStub.send(cmDummyEvent, due.getSender());
+                    } else {
+                        printMessage("삭제\n");
+                        String str = String.valueOf(due.getSender());
+                        Path path = Paths.get("C:\\CMProject\\server-file-path");
+                        Path path1 = path.resolve(str);
+                        Path path2 = path1.resolve(String.valueOf(c_array[i1][0]));
+                        File file = new File(String.valueOf(path2));
+                        boolean delete = file.delete();
+                        if(delete == true){
+                            printMessage("삭제 성공\n");
+                        }
+
+                        array2[u][0] = null; //서버 파일,로지컬 클락 배열 초기화
+                        array2[u][1] = null;
+                        CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                        cmDummyEvent.setDummyInfo("D§Y§" + c_array[i1][0]);
+                        m_serverStub.send(cmDummyEvent, due.getSender());
+                    }
                 }
-                a = 1;
-                printMessage(array2[u][0]+"\n"+array2[u][1]+"\n");
             }
         }
 
 
-        if(a != 1) {
-            //서버에 파일이 없으면
+        if((a != 1) && String.valueOf(v).equals(String.valueOf("C"))) {
+            //서버에 파일이 없으면 서버에 파일 업데이트
             printMessage(a +"  "+ i);
             array2[i][0] = c_array[i1][0];
             printMessage(array2[i][0]);
-            array2[i][1] = String.valueOf(Integer.valueOf(c_array[i1][1])+1);
+            array2[i][1] = String.valueOf(Integer.valueOf(c_array[i1][1])+1);  //서버 로지컬 클락 업데이트
             printMessage(array2[i][0]+"\n"+array2[i][1]+"\n");
         }
 
