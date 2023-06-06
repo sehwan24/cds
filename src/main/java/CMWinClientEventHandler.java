@@ -80,6 +80,15 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             }
         }
 
+        /*if(String.valueOf(strArray[0]).equals("Transfer2")) {
+            if(String.valueOf(strArray[1]).equals(String.valueOf(1))) {
+                printMessage("Choose file\n");
+            }
+            else {
+                printMessage("No user online\n");
+            }
+        }*/
+
         if(String.valueOf(strArray[1]).equals("Y")){
             if(String.valueOf(strArray[0]).equals("M")) {
                 printMessage("수정 동기화 성공\n");

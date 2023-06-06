@@ -461,6 +461,7 @@ public class CMWinClient extends JFrame {
 
 
     private void fileTransfer() {
+
         CMDummyEvent cmDummyEvent = new CMDummyEvent();
         cmDummyEvent.setDummyInfo("Transfer");
         cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
@@ -475,7 +476,44 @@ public class CMWinClient extends JFrame {
         if (option == JOptionPane.OK_OPTION) {
             strusername = user.getText();
         }
-        printMessage(strusername);
+
+        /*CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
+        cmDummyEvent2.setDummyInfo("Transfer2§" + strusername);
+        cmClientStub.send(cmDummyEvent2, cmClientStub.getDefaultServerName());*/
+
+
+        /*if(String.valueOf(strusername).equals(String.valueOf(s))) {
+            printMessage("다른 클라이언트를 입력하세요.\n");
+        }*/
+
+        cmClientStub.findRegisteredUser(strusername);
+
+        CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
+        String s = interInfo.getMyself().getName();
+
+        Path transferHome = cmClientStub.getTransferedFileHome();
+        JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fc.setMultiSelectionEnabled(false);
+        Path path = transferHome;
+        Path path1 = path.resolve(s);
+        fc.setCurrentDirectory(path1.toFile());
+        int fcRet = fc.showOpenDialog(null);
+        if(fcRet != JFileChooser.APPROVE_OPTION) return;
+        File file = fc.getSelectedFile();
+        printMessage(file.getPath());
+
+        cmClientStub.pushFile(file.getPath(), "SERVER");   //서버로 선택된 파일 전송
+        printMessage("1");
+
+        CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
+        printMessage("2");
+        cmDummyEvent1.setDummyInfo("Share§" + String.valueOf(strusername) + "§" + String.valueOf(file.getPath()));
+        printMessage("3");
+        boolean send = cmClientStub.send(cmDummyEvent1, cmClientStub.getDefaultServerName());
+        printMessage(String.valueOf(send));
+
+
 
     }
 
