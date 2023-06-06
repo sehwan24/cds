@@ -98,6 +98,8 @@ public class CMWinServer extends JFrame {
 
 
     public void printFiles() {
+
+
         Path path = Paths.get("C:\\CMProject\\server-file-path");
         File file = new File(String.valueOf(path));
         File[] fileList = file.listFiles();
@@ -107,6 +109,8 @@ public class CMWinServer extends JFrame {
                 printMessage2(String.valueOf(fileList[i])+"\n");
             }
         }
+
+
 
     }
 
@@ -196,6 +200,7 @@ public class CMWinServer extends JFrame {
     }
 
     public void printMessage(String strText) {
+
         StyledDocument styledDocument = jTextPane.getStyledDocument();
         try {
             styledDocument.insertString(styledDocument.getLength(), strText, null);

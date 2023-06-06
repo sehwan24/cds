@@ -26,7 +26,6 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
     private CMWinServer m_server;
     private CMServerStub m_serverStub;
 
-    private CMClientStub cmClientStub;
 
     String[][] c_array = new String[50][2];
 
@@ -211,11 +210,23 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             Path path1 = path.resolve(t);
             Path path2 = path1.resolve(b);
 
+            /*printMessage(String.valueOf(path2));
+            CMDummyEvent cmDummyEvent = new CMDummyEvent();
+            printMessage("1");
+            cmDummyEvent.setDummyInfo("Push§"+String.valueOf(path2));
+            printMessage("2");
+            boolean send = m_serverStub.send(cmDummyEvent, a);
+            printMessage(String.valueOf(send));*/
             printMessage(String.valueOf(path2));
 
             boolean b1 = m_serverStub.pushFile(String.valueOf(path2),a);
+
             if(b1) {
                 printMessage("filepush success\n");
+                CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                cmDummyEvent.setDummyInfo("Push§"+ b);
+                m_serverStub.send(cmDummyEvent, a);
+
             }
             else {
                 printMessage("filepush fail\n");
@@ -263,11 +274,12 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
         {
             case CMFileEvent.END_FILE_TRANSFER_CHAN:
 
-
-
-
                 printMessage(fe.getFileName()+"파일전송 완료\n");
 
+
+                break;
+
+            case CMFileEvent.REPLY_PERMIT_PULL_FILE:
 
                 break;
 

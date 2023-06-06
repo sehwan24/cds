@@ -464,6 +464,11 @@ public class CMWinClient extends JFrame {
 
     private void fileTransfer() {
 
+       /* Path pth0 = Paths.get(".\\client-file-path");
+        cmClientStub.setTransferedFileHome(pth0);*/
+
+        cmClientStub.setTransferedFileHome(Path.of(".\\client-file-path"));
+
         CMDummyEvent cmDummyEvent = new CMDummyEvent();
         cmDummyEvent.setDummyInfo("Transfer");
         cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
@@ -507,7 +512,11 @@ public class CMWinClient extends JFrame {
         File file = fc.getSelectedFile();
         printMessage(file.getPath());
 
+        File file1 = new File(".\\client-file-path\\" + strusername);
+        cmClientStub.setTransferedFileHome(file1.toPath());
 
+
+        /*
         Path path3 = cmClientStub.getTransferedFileHome();
         printMessage(String.valueOf(path3));
         Path path4 = path3.resolve(String.valueOf(strusername));
@@ -516,7 +525,7 @@ public class CMWinClient extends JFrame {
 
         while(!String.valueOf(path4).equals(String.valueOf(cmClientStub.getTransferedFileHome()))) {
             cmClientStub.setTransferedFileHome(path4);
-        }
+        }*/
 
         CMInteractionInfo interInfo1 = cmClientStub.getCMInfo().getInteractionInfo();
         String s2 = interInfo.getMyself().getName();
@@ -537,7 +546,6 @@ public class CMWinClient extends JFrame {
 
         boolean send = cmClientStub.send(cmDummyEvent1, cmClientStub.getDefaultServerName());
         printMessage(String.valueOf(send));
-
 
 
     }

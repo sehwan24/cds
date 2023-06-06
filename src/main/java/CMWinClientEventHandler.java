@@ -109,6 +109,28 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             printMessage("동기화 실패\n");
         }
 
+
+        if(String.valueOf(strArray[0]).equals("Push")) {
+            printMessage("Pull request\n");
+            /*CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+            String s1 = interInfo.getMyself().getName();
+            Path old = Paths.get("C:\\CMProject\\client-file-path\\" + strArray[1]);
+            /*while(!Files.exists(old)) {
+
+            }
+            printMessage(String.valueOf(old) + "\n");
+            Path se = Paths.get("C:\\CMProject\\client-file-path\\"+s1+"\\" + strArray[1]);
+            printMessage(String.valueOf(se) + "\n");
+            try {
+                Path move = Files.move(old, se, StandardCopyOption.ATOMIC_MOVE);
+                printMessage(String.valueOf(move));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }*/
+
+        }
+
+
         return;
     }
 
@@ -121,7 +143,32 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
         {
             case CMFileEvent.END_FILE_TRANSFER_ACK:
                 printMessage("End file transfer!!!");
+                CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+                String s1 = interInfo.getMyself().getName();
+                String str = fe.getFileName();
+                Path old = Paths.get("C:\\CMProject\\client-file-path\\" + str);
+            /*while(!Files.exists(old)) {
+
+            }*/
+                printMessage(String.valueOf(old) + "\n");
+                Path se = Paths.get("C:\\CMProject\\client-file-path\\"+s1+"\\" + str);
+                printMessage(String.valueOf(se) + "\n");
+                try {
+                    Path move = Files.move(old, se, StandardCopyOption.ATOMIC_MOVE);
+                    printMessage(String.valueOf(move));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
                 break;
+
+            case CMFileEvent.REQUEST_PERMIT_PULL_FILE:
+                printMessage("\npermit request\n");
+                break;
+            case CMFileEvent.REPLY_PERMIT_PUSH_FILE:
+                printMessage("END PUSH\n");
+                break;
+
 
         }
         return;
