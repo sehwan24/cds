@@ -8,6 +8,7 @@ import kr.ac.konkuk.ccslab.cm.event.handler.CMAppEventHandler;
 import kr.ac.konkuk.ccslab.cm.info.CMConfigurationInfo;
 import kr.ac.konkuk.ccslab.cm.info.CMInfo;
 import kr.ac.konkuk.ccslab.cm.manager.CMDBManager;
+import kr.ac.konkuk.ccslab.cm.stub.CMClientStub;
 import kr.ac.konkuk.ccslab.cm.stub.CMServerStub;
 
 import java.io.File;
@@ -17,11 +18,15 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Vector;
 
+import static java.lang.Thread.sleep;
+
 public class CMWinServerEventHandler implements CMAppEventHandler {
 
 
     private CMWinServer m_server;
     private CMServerStub m_serverStub;
+
+    private CMClientStub cmClientStub;
 
     String[][] c_array = new String[50][2];
 
@@ -195,9 +200,20 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
         if(String.valueOf(v).equals(String.valueOf("Share"))) {  //파일공유
             printMessage("Server get file\n");
-            String a = String.valueOf(strArray[1]);
-            String b = String.valueOf(strArray[2]);
-            boolean b1 = m_serverStub.pushFile(b,a);
+            String a = String.valueOf(strArray[1]);  //누구한테 줄건지
+            printMessage(a);
+            String b = String.valueOf(strArray[2]);  //file name
+            printMessage(b);
+
+            String t = due.getSender();
+
+            Path path = Paths.get("C:\\CMProject\\server-file-path");
+            Path path1 = path.resolve(t);
+            Path path2 = path1.resolve(b);
+
+            printMessage(String.valueOf(path2));
+
+            boolean b1 = m_serverStub.pushFile(String.valueOf(path2),a);
             if(b1) {
                 printMessage("filepush success\n");
             }
@@ -254,7 +270,11 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
 
                 break;
+
+
         }
+
+
         return;
     }
 

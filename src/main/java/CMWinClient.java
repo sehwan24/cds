@@ -15,6 +15,8 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+
 public class CMWinClient extends JFrame {
     private JTextPane jTextPane;
     private JTextPane jTextPane2;
@@ -486,6 +488,8 @@ public class CMWinClient extends JFrame {
             printMessage("다른 클라이언트를 입력하세요.\n");
         }*/
 
+
+
         cmClientStub.findRegisteredUser(strusername);
 
         CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
@@ -503,13 +507,34 @@ public class CMWinClient extends JFrame {
         File file = fc.getSelectedFile();
         printMessage(file.getPath());
 
-        cmClientStub.pushFile(file.getPath(), "SERVER");   //서버로 선택된 파일 전송
-        printMessage("1");
+
+        Path path3 = cmClientStub.getTransferedFileHome();
+        printMessage(String.valueOf(path3));
+        Path path4 = path3.resolve(String.valueOf(strusername));
+        printMessage(String.valueOf(path4));
+        cmClientStub.setTransferedFileHome(path4);
+
+        while(!String.valueOf(path4).equals(String.valueOf(cmClientStub.getTransferedFileHome()))) {
+            cmClientStub.setTransferedFileHome(path4);
+        }
+
+        CMInteractionInfo interInfo1 = cmClientStub.getCMInfo().getInteractionInfo();
+        String s2 = interInfo.getMyself().getName();
+
+        String s1 = file.getName();
+
+        Path pth = Paths.get("C:\\CMProject\\client-file-path");
+        Path pth1 = pth.resolve(s2);
+        Path pth2 = pth1.resolve(s1);
+
+
+        cmClientStub.pushFile(String.valueOf(pth2), "SERVER");   //서버로 선택된 파일 전송
+
 
         CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
-        printMessage("2");
-        cmDummyEvent1.setDummyInfo("Share§" + String.valueOf(strusername) + "§" + String.valueOf(file.getPath()));
-        printMessage("3");
+        printMessage(file.getName() + "\n!@!#!#\n");
+        cmDummyEvent1.setDummyInfo("Share§" + String.valueOf(strusername) + "§" + String.valueOf(file.getName()));
+
         boolean send = cmClientStub.send(cmDummyEvent1, cmClientStub.getDefaultServerName());
         printMessage(String.valueOf(send));
 
@@ -535,7 +560,7 @@ public class CMWinClient extends JFrame {
             }
         }
 
-        printMessage2("--------------------------\nCL : "+clientlogicalclock);
+
     }
 
     private void initializeButtons() {
