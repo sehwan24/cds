@@ -411,7 +411,8 @@ public class CMWinClient extends JFrame {
                     }
                     else {
                         printMessage(String.valueOf(path4));
-                        cmClientStub.pushFile(String.valueOf(path4), "SERVER");
+                        boolean server = cmClientStub.pushFile(String.valueOf(path4), "SERVER");
+                        printMessage(String.valueOf(server));
                         printMessage("동기화 성공1\n");
                     }
                     i++;

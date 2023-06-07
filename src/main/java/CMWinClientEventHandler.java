@@ -138,18 +138,39 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
     private void processFileEvent(CMEvent cmEvent)
     {
         CMFileEvent fe = (CMFileEvent) cmEvent;
+        File file1 = new File(".\\client-file-path\\" + fe.getFileReceiver());
+        printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+        m_clientStub.setTransferedFileHome(file1.toPath());
+        printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
         int nOption = -1;
         switch(fe.getID())
         {
+            case CMFileEvent.REQUEST_PERMIT_PUSH_FILE:
+                printMessage("\nrequestfiletransfer\n");
+                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+                m_clientStub.setTransferedFileHome(file1.toPath());
+                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            case CMFileEvent.REPLY_PERMIT_PUSH_FILE:
+                printMessage("\nreqlyfiletransfer\n");
+                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+                m_clientStub.setTransferedFileHome(file1.toPath());
+                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            case CMFileEvent.START_FILE_TRANSFER:
+                printMessage("\nstartfiletransfer\n");
+                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+                m_clientStub.setTransferedFileHome(file1.toPath());
+                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             case CMFileEvent.END_FILE_TRANSFER_ACK:
                 printMessage("End file transfer!!!");
+                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+
                 CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
-                String s1 = interInfo.getMyself().getName();
+                /*String s1 = interInfo.getMyself().getName();
                 String str = fe.getFileName();
                 Path old = Paths.get("C:\\CMProject\\client-file-path\\" + str);
-            /*while(!Files.exists(old)) {
+                while(!Files.exists(old)) {
 
-            }*/
+                }
                 printMessage(String.valueOf(old) + "\n");
                 Path se = Paths.get("C:\\CMProject\\client-file-path\\"+s1+"\\" + str);
                 printMessage(String.valueOf(se) + "\n");
@@ -158,16 +179,14 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
                     printMessage(String.valueOf(move));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
-                }
+                }*/
 
                 break;
 
             case CMFileEvent.REQUEST_PERMIT_PULL_FILE:
                 printMessage("\npermit request\n");
                 break;
-            case CMFileEvent.REPLY_PERMIT_PUSH_FILE:
-                printMessage("END PUSH\n");
-                break;
+
 
 
         }
