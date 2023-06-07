@@ -26,20 +26,8 @@ public class CMWinClient extends JFrame {
     private JButton printFilesButton;
     private JButton fileTransferButton;
     private JButton fileUpdateButton;
-    private JButton m_readNewSNSContentButton;
-    private JButton m_readNextSNSContentButton;
-    private JButton m_readPreviousSNSContentButton;
-    private JButton m_findUserButton;
-    private JButton m_addFriendButton;
-    private JButton m_removeFriendButton;
-    private JButton m_friendsButton;
-    private JButton m_friendRequestersButton;
-    private JButton m_biFriendsButton;
-    private MyMouseListener myMouseListener;
     private CMClientStub cmClientStub;
     private CMWinClientEventHandler cmWinClientEventHandler;
-    private int clientlogicalclock;
-
     String[][] array = new String[50][2];
 
 
@@ -47,7 +35,6 @@ public class CMWinClient extends JFrame {
     CMWinClient() {
         MyKeyListener myKeyListener = new MyKeyListener();
         MyActionListener myActionListener = new MyActionListener();
-        myMouseListener = new MyMouseListener();
         setTitle("CM Client");
         setSize(600, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -401,11 +388,11 @@ public class CMWinClient extends JFrame {
                     //파일 생성 시
                     printMessage(pth.getFileName() + " 생성\n");
                     CMDummyEvent cmDummyEvent = new CMDummyEvent();
-                    array[i][0] = String.valueOf(pth.getFileName());
+                    array[i][0] = String.valueOf(pth.getFileName());      //i는 클라이언트 파일배열
                     printMessage(array[i][0]+ "\n");
                     array[i][1] = String.valueOf(1);
                     printMessage(array[i][1]+ "\n");
-                    cmDummyEvent.setDummyInfo("C" + "§" + String.valueOf(i) +"§"+ array[i][0] +"§" + array[i][1]);
+                    cmDummyEvent.setDummyInfo("C" + "§" + String.valueOf(i) +"§"+ array[i][0] +"§" + array[i][1]+"§"+s);
                     cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
                     if(Files.exists(path3)){
                         printMessage("동기화 실패\n");
@@ -426,30 +413,49 @@ public class CMWinClient extends JFrame {
                     //파일 삭제 시
                     printMessage(pth.getFileName() + " 삭제\n");
                     CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                    int v1 = -1;
                     for(int k = 0; k < 50; k++) {  //몇 번 파일 삭제됐나 확인
                         if(String.valueOf(pth.getFileName()).equals(array[k][0])){    //클라이언트
                             array[k][1] = String.valueOf(Integer.valueOf(array[k][1])+1);  //로지컬 클락 업데이트
                             printMessage("\n"+array[k][0]+"\n"+array[k][1]+"\n");
                             n = k;
+                            v1 = 1;
                         }
                     }
-                    cmDummyEvent.setDummyInfo("D" + "§" + String.valueOf(n) +"§"+ array[n][0] +"§" + array[n][1]);
-                    cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName()); //서버와 통신
-                    array[n][0] = null;
-                    array[n][1] = null;  //삭제했으니 파일명, 로지컬 클락 배열 초기화
+                    if(v1 == 1) {
+                        cmDummyEvent.setDummyInfo("D" + "§" + String.valueOf(n) + "§" + array[n][0] + "§" + array[n][1]);
+                        cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName()); //서버와 통신
+                        array[n][0] = null;
+                        array[n][1] = null;  //삭제했으니 파일명, 로지컬 클락 배열 초기화
+                    }
+                    else {
+                        CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
+                        cmDummyEvent1.setDummyInfo("D2§"+pth.getFileName());
+                        cmClientStub.send(cmDummyEvent1, "SERVER");
+                    }
                     return;
                 } else if (kind.equals(StandardWatchEventKinds.ENTRY_MODIFY)) {
                     //파일 수정 시
                     printMessage(pth.getFileName() + " 수정\n");
                     CMDummyEvent cmDummyEvent = new CMDummyEvent();
+                    int v = -1;
                     for(int k = 0; k < 50; k++) {  //몇 번 파일 수정됐나 확인
                         if(String.valueOf(pth.getFileName()).equals(array[k][0])){    //클라이언트
                             array[k][1] = String.valueOf(Integer.valueOf(array[k][1])+1);  //로지컬 클락 업데이트
                             printMessage("\n"+array[k][0]+"\n"+array[k][1]+"\n");
                             n = k;
+                            v = 1;
                         }
                     }
-                    cmDummyEvent.setDummyInfo("M" + "§" + String.valueOf(n) +"§"+ array[n][0] +"§" + array[n][1]);
+                    if(v == 1) {
+                        cmDummyEvent.setDummyInfo("M" + "§" + String.valueOf(n) + "§" + array[n][0] + "§" + array[n][1]);
+                    }
+                    else {
+                        cmDummyEvent.setDummyInfo("M2§"+pth.getFileName());
+                        File file1 = new File("C:\\CMProject\\client-file-path-"+s+"\\"+pth.getFileName());
+                        Path path = file1.toPath();
+                        cmClientStub.pushFile(String.valueOf(path), "SERVER");
+                    }
                     cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
 
                     return;
@@ -549,10 +555,12 @@ public class CMWinClient extends JFrame {
         cmClientStub.setTransferedFileHome(file3.toPath());
 
         CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
-        cmDummyEvent2.setDummyInfo("Toclient");
-        cmClientStub.send(cmDummyEvent2, strusername);
+        cmDummyEvent2.setDummyInfo("Toclient§"+s1+"§"+strusername+"§"+pth3);
+        boolean send1 = cmClientStub.send(cmDummyEvent2, strusername);
+        printMessage(String.valueOf(send1));
 
         cmClientStub.pushFile(String.valueOf(pth3), "SERVER");   //서버로 선택된 파일 전송
+
 
 
         CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
@@ -571,9 +579,10 @@ public class CMWinClient extends JFrame {
         CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
         String s = interInfo.getMyself().getName();
 
-        Path path = Paths.get("C:\\CMProject\\client-file-path");
+        /*path path = Paths.get("C:\\CMProject\\client-file-path");
         Path path1 = path.resolve(s);
-        File file = new File(String.valueOf(path1));
+        File file = new File(String.valueOf(path1));*/
+        File file = new File("C:\\CMProject\\client-file-path-"+s+"\\");
         File[] fileList = file.listFiles();
 
 
@@ -582,6 +591,8 @@ public class CMWinClient extends JFrame {
                 printMessage2(String.valueOf(fileList[i])+"\n");
             }
         }
+
+        printMessage("------------------------------------------------\n");
 
 
     }
@@ -596,79 +607,7 @@ public class CMWinClient extends JFrame {
 
 
 
-    public class MyMouseListener implements MouseListener {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if(e.getSource() instanceof JLabel)
-            {
-                JLabel pathLabel = (JLabel)e.getSource();
-                String strPath = pathLabel.getText();
-                File fPath = new File(strPath);
-                try {
-                    int index = strPath.lastIndexOf(File.separator);
-                    String strFileName = strPath.substring(index+1, strPath.length());
-                    if(fPath.exists())
-                    {
-                        accessAttachedFile(strFileName);
-                        Desktop.getDesktop().open(fPath);
-                    }
-                    else
-                    {
-                        requestAttachedFile(strFileName);
-                    }
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
 
-        @Override
-        public void mousePressed(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            if(e.getSource() instanceof JLabel) {
-                Cursor cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-                setCursor(cursor);
-            }
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            if(e.getSource() instanceof JLabel)
-            {
-                Cursor cursor = Cursor.getDefaultCursor();
-                setCursor(cursor);
-            }
-        }
-    }
-
-    private void requestAttachedFile(String strFileName) {
-        boolean bRet = cmClientStub.requestAttachedFileOfSNSContent(strFileName);
-        if(bRet)
-            cmWinClientEventHandler.setReqAttachedFile(true);
-        else
-            printMessage(strFileName+" not found in the downloaded content list!\n");
-
-        return;
-    }
-
-
-
-    private void accessAttachedFile(String strFileName) {
-        boolean bRet = cmClientStub.accessAttachedFileOfSNSContent(strFileName);
-        if(bRet)
-            printMessage(strFileName+" not found in the downloaded content list!\n");
-
-        return;
-    }
 
 
     public static void main(String[] args) {

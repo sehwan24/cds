@@ -20,7 +20,6 @@ public class CMWinServer extends JFrame {
 
     private JTextPane jTextPane;
     private JTextPane jTextPane2;
-    private JTextField jTextField;
     private JButton cmStartStopButton;
     private JButton printFilesButton;
     private CMServerStub cmServerStub;
@@ -30,7 +29,6 @@ public class CMWinServer extends JFrame {
 
 
     CMWinServer() {
-        //MyKeyListener myKeyListener = new MyKeyListener();
         MyActionListener myActionListener = new MyActionListener();
         setTitle("CM Server");
         setSize(600,600);
@@ -213,33 +211,6 @@ public class CMWinServer extends JFrame {
     }
 
 
-   /* public void processInput(String strInput) {
-        int nCommand = -1;
-        try {
-            nCommand = Integer.parseInt(strInput);
-        } catch (NumberFormatException e) {
-            printMessage("NumberFormatException\n");
-            return;
-        }
-
-        switch (nCommand){
-            case 0:
-                //printAllMenus();
-                break;
-            case 1:
-                //
-                break;
-            default:
-                printMessage("Unknown command.\n");
-                break;
-        }
-    }*/
-
-    /*public void setMenus() {
-        MyMenuListener menuListener = new MyMenuListener();
-        JMenuBar menuBar = new JMenuBar();
-        JMenu
-    }*/
 
 
     public class MyMenuListener implements ActionListener {

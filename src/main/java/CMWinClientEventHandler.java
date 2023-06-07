@@ -70,20 +70,82 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
 
         String s = due.getDummyInfo();
 
-        if(String.valueOf(s).equals("Toclient")) {
-            printMessage("@@@@@");
+
+
+        String[] strArray = s.split("§");
+
+        if(String.valueOf(strArray[0]).equals("Path")) {
             CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
             String s1 = interInfo.getMyself().getName();
-            File file1 = new File(".\\client-file-path-" + s1);
-            printMessage("\n!!\n");
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
-            m_clientStub.setTransferedFileHome(file1.toPath());
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
-            printMessage("!$@\n");
+            CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
+            cmDummyEvent2.setDummyInfo("ToCli§"+s1+"§"+String.valueOf(strArray[2]));   //클라이언트에게
+            boolean send1 = m_clientStub.send(cmDummyEvent2, String.valueOf(strArray[1]));
+            printMessage(String.valueOf(send1));
             return;
         }
 
-        String[] strArray = s.split("§");
+        if(String.valueOf(strArray[0]).equals("PathD")) {
+            CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+            String s1 = interInfo.getMyself().getName();
+            CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
+            cmDummyEvent2.setDummyInfo("ToCliD§"+s1+"§"+String.valueOf(strArray[2]));   //클라이언트에게
+            boolean send1 = m_clientStub.send(cmDummyEvent2, String.valueOf(strArray[1]));
+            printMessage(String.valueOf(send1));
+            return;
+        }
+
+        if(String.valueOf(strArray[0]).equals("ToCli")) {
+            CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+            String s1 = interInfo.getMyself().getName();
+            File file1 = new File(".\\client-file-path-" + s1);
+            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            m_clientStub.setTransferedFileHome(file1.toPath());
+            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            String s2 = String.valueOf(strArray[2]);
+            File file = new File("C:\\CMProject\\client-file-path-" + String.valueOf(strArray[1])+"\\"+s2);
+            Path path = file.toPath();
+            m_clientStub.pushFile(String.valueOf(path), "SERVER");
+            CMDummyEvent cmDummyEvent = new CMDummyEvent();
+            cmDummyEvent.setDummyInfo("GoPush§"+s1+"§"+s2);
+            m_clientStub.send(cmDummyEvent, "SERVER");
+
+            return;
+        }
+
+        if(String.valueOf(strArray[0]).equals("ToCliD")) {
+            CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+            String s1 = interInfo.getMyself().getName();
+            File file1 = new File(".\\client-file-path-" + s1);
+            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            m_clientStub.setTransferedFileHome(file1.toPath());
+            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            String s2 = String.valueOf(strArray[2]);
+            File file = new File("C:\\CMProject\\client-file-path-" + s1+"\\"+s2);
+            printMessage(String.valueOf(file));
+            boolean delete = file.delete();
+            printMessage(String.valueOf(delete));
+            /*Path path = file.toPath();
+            m_clientStub.pushFile(String.valueOf(path), "SERVER");*/
+            CMDummyEvent cmDummyEvent = new CMDummyEvent();
+            cmDummyEvent.setDummyInfo("GoPushD§"+s1+"§"+s2);
+            m_clientStub.send(cmDummyEvent, "SERVER");
+
+            return;
+        }
+
+
+        if(String.valueOf(strArray[0]).equals("Toclient")) {
+            CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+            String s1 = interInfo.getMyself().getName();
+            File file1 = new File(".\\client-file-path-" + s1);
+            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            m_clientStub.setTransferedFileHome(file1.toPath());
+            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            String s2 = String.valueOf(strArray[3]);
+            m_clientStub.pushFile(s2, "SERVER");
+
+            return;
+        }
 
         if(String.valueOf(strArray[0]).equals("Transfer")) {
             int length = strArray.length;
