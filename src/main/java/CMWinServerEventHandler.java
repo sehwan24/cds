@@ -95,6 +95,10 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
         String s = due.getDummyInfo();
         printMessage(s);
 
+        if(String.valueOf(s).equals("Toclient")) {
+            return;
+        }
+
         if(String.valueOf(s).equals(String.valueOf("Transfer"))) {  //파일 전송 이벤트 받음
             CMMember loginUsers = m_serverStub.getLoginUsers();
             printMessage("0");
@@ -184,6 +188,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                     }
                 }
             }
+            return;
         }
 
 
@@ -231,6 +236,8 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             else {
                 printMessage("filepush fail\n");
             }
+
+            return;
 
         }
 

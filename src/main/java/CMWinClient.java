@@ -133,8 +133,8 @@ public class CMWinClient extends JFrame {
         List<String> localAddressList = null;
         int serverPort = -1;
 
-        cmClientStub.setConfigurationHome(Paths.get("."));
-        cmClientStub.setTransferedFileHome(cmClientStub.getConfigurationHome().resolve("client-file-path"));
+        //cmClientStub.setConfigurationHome(Paths.get("."));
+        //cmClientStub.setTransferedFileHome(cmClientStub.getConfigurationHome());  //수정
 
         localAddressList = CMCommManager.getLocalIPList();
         if(localAddressList == null) {
@@ -360,9 +360,13 @@ public class CMWinClient extends JFrame {
 
         CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
         String s = interInfo.getMyself().getName();
-
+/*
         Path path0 = Paths.get("C:\\CMProject\\client-file-path");
-        Path path1 = path0.resolve(s);
+        Path path1 = path0
+
+ */
+        File file = new File("C:\\CMProject\\client-file-path-" + s);
+        Path path1 = file.toPath();   //수정
 
         WatchService watchService = null;
         try {
@@ -391,8 +395,8 @@ public class CMWinClient extends JFrame {
             for (WatchEvent<?> event : list) {
                 WatchEvent.Kind<?> kind = event.kind();
                 Path pth = (Path) event.context();
-                Path path3 = path2.resolve(pth);
-                Path path4 = path1.resolve(pth);
+                Path path3 = path2.resolve(pth); //server
+                Path path4 = path1.resolve(pth); //client
                 if (kind.equals(StandardWatchEventKinds.ENTRY_CREATE)) {
                     //파일 생성 시
                     printMessage(pth.getFileName() + " 생성\n");
@@ -468,7 +472,7 @@ public class CMWinClient extends JFrame {
        /* Path pth0 = Paths.get(".\\client-file-path");
         cmClientStub.setTransferedFileHome(pth0);*/
 
-        cmClientStub.setTransferedFileHome(Path.of(".\\client-file-path"));
+        cmClientStub.setTransferedFileHome(Path.of(".\\"));
 
         CMDummyEvent cmDummyEvent = new CMDummyEvent();
         cmDummyEvent.setDummyInfo("Transfer");
@@ -495,9 +499,6 @@ public class CMWinClient extends JFrame {
         }*/
 
 
-
-        cmClientStub.findRegisteredUser(strusername);
-
         CMInteractionInfo interInfo = cmClientStub.getCMInfo().getInteractionInfo();
         String s = interInfo.getMyself().getName();
 
@@ -506,14 +507,15 @@ public class CMWinClient extends JFrame {
         fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fc.setMultiSelectionEnabled(false);
         Path path = transferHome;
-        Path path1 = path.resolve(s);
-        fc.setCurrentDirectory(path1.toFile());
+        File file0 = new File(".\\client-file-path-" + s);
+        //Path path1 = path.resolve(s);
+        fc.setCurrentDirectory(file0);
         int fcRet = fc.showOpenDialog(null);
         if(fcRet != JFileChooser.APPROVE_OPTION) return;
         File file = fc.getSelectedFile();
         printMessage(file.getPath());
 
-        File file1 = new File(".\\client-file-path\\" + strusername);
+        File file1 = new File(".\\client-file-path-" + strusername);
         cmClientStub.setTransferedFileHome(file1.toPath());
 
 
@@ -533,12 +535,24 @@ public class CMWinClient extends JFrame {
 
         String s1 = file.getName();
 
-        Path pth = Paths.get("C:\\CMProject\\client-file-path");
+        /*Path pth = Paths.get("C:\\CMProject\\client-file-path");
         Path pth1 = pth.resolve(s2);
-        Path pth2 = pth1.resolve(s1);
+        Path pth2 = pth1.resolve(s1);*/
+
+        File file2 = new File("C:\\CMProject\\client-file-path-" + s2);
+        Path pth2 = file2.toPath();
+        Path pth3 = pth2.resolve(s1);
 
 
-        cmClientStub.pushFile(String.valueOf(pth2), "SERVER");   //서버로 선택된 파일 전송
+
+        File file3 = new File(".\\client-file-path-" + strusername);
+        cmClientStub.setTransferedFileHome(file3.toPath());
+
+        CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
+        cmDummyEvent2.setDummyInfo("Toclient");
+        cmClientStub.send(cmDummyEvent2, strusername);
+
+        cmClientStub.pushFile(String.valueOf(pth3), "SERVER");   //서버로 선택된 파일 전송
 
 
         CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
