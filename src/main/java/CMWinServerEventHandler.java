@@ -8,14 +8,12 @@ import kr.ac.konkuk.ccslab.cm.event.handler.CMAppEventHandler;
 import kr.ac.konkuk.ccslab.cm.info.CMConfigurationInfo;
 import kr.ac.konkuk.ccslab.cm.info.CMInfo;
 import kr.ac.konkuk.ccslab.cm.manager.CMDBManager;
-import kr.ac.konkuk.ccslab.cm.stub.CMClientStub;
 import kr.ac.konkuk.ccslab.cm.stub.CMServerStub;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -24,8 +22,8 @@ import static java.lang.Thread.sleep;
 public class CMWinServerEventHandler implements CMAppEventHandler {
 
 
-    private CMWinServer m_server;
-    private CMServerStub m_serverStub;
+    private CMWinServer cmWinServer;
+    private CMServerStub cmServerStub;
 
 
     String[][] c_array = new String[50][2];
@@ -36,8 +34,8 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
     public CMWinServerEventHandler(CMServerStub cmServerStub, CMWinServer cmWinServer)
     {
-        m_server = cmWinServer;
-        m_serverStub = cmServerStub;
+        this.cmWinServer = cmWinServer;
+        this.cmServerStub = cmServerStub;
     }
 
 
@@ -59,7 +57,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
     }
 
     private void processSessionEvent(CMEvent cmEvent) {
-        CMConfigurationInfo confInfo = m_serverStub.getCMInfo().getConfigurationInfo();
+        CMConfigurationInfo confInfo = cmServerStub.getCMInfo().getConfigurationInfo();
         CMSessionEvent se = (CMSessionEvent) cmEvent;
         switch(se.getID()) {
             case CMSessionEvent.LOGIN:
@@ -69,13 +67,13 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                     // user authentication...
                     // CM DB must be used in the following authentication..
                     boolean ret = CMDBManager.authenticateUser(se.getUserName(), se.getPassword(),
-                            m_serverStub.getCMInfo());
+                            cmServerStub.getCMInfo());
                     if (!ret) {
                         printMessage("[" + se.getUserName() + "] authentication fails!\n");
-                        m_serverStub.replyEvent(cmEvent, 0);
+                        cmServerStub.replyEvent(cmEvent, 0);
                     } else {
                         printMessage("[" + se.getUserName() + "] authentication succeeded.\n");
-                        m_serverStub.replyEvent(cmEvent, 1);
+                        cmServerStub.replyEvent(cmEvent, 1);
                     }
                 }
                 break;
@@ -106,7 +104,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
 
         if(String.valueOf(s).equals(String.valueOf("Transfer"))) {  //파일 전송 이벤트 받음
-            CMMember loginUsers = m_serverStub.getLoginUsers();
+            CMMember loginUsers = cmServerStub.getLoginUsers();
             //printMessage("0");
             if(loginUsers == null)
             {
@@ -129,7 +127,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             }
             s1 = s1 + String.valueOf(f);
             cmDummyEvent.setDummyInfo(s1);
-            m_serverStub.send(cmDummyEvent, due.getSender());
+            cmServerStub.send(cmDummyEvent, due.getSender());
             //printMessage("3");
             return;
 
@@ -162,7 +160,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
             Path path2 = file.toPath();
 
-            boolean b1 = m_serverStub.pushFile(String.valueOf(path2), c);
+            boolean b1 = cmServerStub.pushFile(String.valueOf(path2), c);
             //printMessage("\nresult:");
             //printMessage(String.valueOf(b1));
 
@@ -196,7 +194,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                 if(!(String.valueOf(file_user[q][t+1]).equals(String.valueOf(due.getSender())))) {
                     CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
                     cmDummyEvent1.setDummyInfo("Path§"+String.valueOf(file_user[q][t+1])+"§"+String.valueOf(file_user[q][0])); //전송할대상, 파일명
-                    m_serverStub.send(cmDummyEvent1, String.valueOf(due.getSender()));   //client-path 바꾸라는 더미이벤트 전송
+                    cmServerStub.send(cmDummyEvent1, String.valueOf(due.getSender()));   //client-path 바꾸라는 더미이벤트 전송
                     File file = new File("C:\\CMProject\\server-file-path\\" + String.valueOf(due.getSender()) + "\\" + String.valueOf(file_user[q][0]));
                     Path path = file.toPath();
                     //printMessage(String.valueOf(path));
@@ -208,7 +206,6 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
         }
 
         if(String.valueOf(v).equals(String.valueOf("D2"))) {
-            printMessage("삭제\n");
             String str = String.valueOf(due.getSender());
             File file = new File("C:\\CMProject\\server-file-path\\"+str+"\\"+String.valueOf(strArray[1]));
             boolean delete = file.delete();
@@ -226,7 +223,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                 if(!(String.valueOf(file_user[q][t+1]).equals(String.valueOf(due.getSender())))) {
                     CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
                     cmDummyEvent1.setDummyInfo("PathD§"+String.valueOf(file_user[q][t+1])+"§"+String.valueOf(file_user[q][0])); //전송할대상, 파일명
-                    m_serverStub.send(cmDummyEvent1, String.valueOf(due.getSender()));   //더미이벤트 전송
+                    cmServerStub.send(cmDummyEvent1, String.valueOf(due.getSender()));   //더미이벤트 전송
                     File file1 = new File("C:\\CMProject\\server-file-path\\" + String.valueOf(due.getSender()) + "\\" + String.valueOf(file_user[q][0]));
                     Path path = file1.toPath();
                     //printMessage(String.valueOf(path));
@@ -274,7 +271,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                             printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             CMDummyEvent cmDummyEvent = new CMDummyEvent();
                             cmDummyEvent.setDummyInfo("M§N");
-                            m_serverStub.send(cmDummyEvent, due.getSender());
+                            cmServerStub.send(cmDummyEvent, due.getSender());
                             printMessage("수정 동기화 실패\n");
                         } else {
                             printMessage("클라이언트 파일 이름 : "+c_array[i1][0]);
@@ -287,7 +284,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                             printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             CMDummyEvent cmDummyEvent = new CMDummyEvent();
                             cmDummyEvent.setDummyInfo("M§Y§" + c_array[i1][0]);
-                            m_serverStub.send(cmDummyEvent, due.getSender());
+                            cmServerStub.send(cmDummyEvent, due.getSender());
                             printMessage("동기화 요청 수락, 파일 수정 가능\n");
                         }
                         a = 1;
@@ -300,7 +297,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                             printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             CMDummyEvent cmDummyEvent = new CMDummyEvent();
                             cmDummyEvent.setDummyInfo("D§N");
-                            m_serverStub.send(cmDummyEvent, due.getSender());
+                            cmServerStub.send(cmDummyEvent, due.getSender());
                             printMessage("삭제 동기화 실패\n");
                         } else {
                             printMessage("클라이언트 파일 이름 : "+c_array[i1][0]);
@@ -317,11 +314,6 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                                 printMessage("서버 파일 삭제 성공, 삭제 동기화 성공\n");
                             }
 
-                            array2[u][0] = null; //서버 파일,로지컬 클락 배열 초기화
-                            array2[u][1] = null;
-                            c_array[i1][0] = null;
-                            c_array[i1][1] = null;
-                            printMessage("서버 파일 정보가 삭제되었습니다.\n");
 
                             for(int o = 0; o < 25; o ++) {      //삭제시 파일 사용자 배열 초기화
                                 file_user[u][o] = null;
@@ -329,7 +321,11 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
                             CMDummyEvent cmDummyEvent = new CMDummyEvent();
                             cmDummyEvent.setDummyInfo("D§Y§" + c_array[i1][0]);
-                            m_serverStub.send(cmDummyEvent, due.getSender());
+                            cmServerStub.send(cmDummyEvent, due.getSender());
+
+                            array2[u][0] = null; //서버 파일,로지컬 클락 배열 초기화
+                            array2[u][1] = null;
+                            printMessage("서버 파일 정보가 삭제되었습니다.\n");
                         }
                     }
                 }
@@ -368,9 +364,9 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             printMessage("2");
             boolean send = m_serverStub.send(cmDummyEvent, a);
             printMessage(String.valueOf(send));*/
-            printMessage(String.valueOf(path2));
+            //printMessage(String.valueOf(path2));
 
-            boolean b1 = m_serverStub.pushFile(String.valueOf(path2),a);
+            boolean b1 = cmServerStub.pushFile(String.valueOf(path2),a);
 
             String o = null;
 
@@ -383,10 +379,10 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             if(b1) {
                 printMessage("filepush success\n");
                 CMDummyEvent cmDummyEvent = new CMDummyEvent();
-                String h = m_server.getMode();
+                String h = cmWinServer.getMode();
                 cmDummyEvent.setDummyInfo(h + "§"+ b + "§" + String.valueOf(o));
-                printMessage(b + o);
-                m_serverStub.send(cmDummyEvent, a);
+                //printMessage(b + o);
+                cmServerStub.send(cmDummyEvent, a);
 
             }
             else {
@@ -438,7 +434,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
                 CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
                 cmDummyEvent2.setDummyInfo("CanPush1§" + String.valueOf(strArray[2]));
-                m_serverStub.send(cmDummyEvent2, due.getSender());
+                cmServerStub.send(cmDummyEvent2, due.getSender());
 
                 printMessage("동기화 요청 수락, 파일 전송 가능\n");
             }
@@ -480,7 +476,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
     private void printMessage(String s)
     {
-            m_server.printMessage(s);
+            cmWinServer.printMessage(s);
     }
 
 }

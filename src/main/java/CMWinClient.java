@@ -12,7 +12,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.*;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
@@ -20,8 +19,8 @@ import static java.lang.Thread.sleep;
 public class CMWinClient extends JFrame {
     private JTextPane jTextPane;
     private JTextPane jTextPane2;
-    private JButton m_startStopButton;
-    private JButton m_loginLogoutButton;
+    private JButton startStopButton;
+    private JButton loginLogoutButton;
     private JButton printFilesButton;
     private JButton fileTransferButton;
     private JButton fileUpdateButton;
@@ -72,17 +71,17 @@ public class CMWinClient extends JFrame {
         topButtonPanel.setLayout(new FlowLayout());
         add(topButtonPanel, BorderLayout.NORTH);
 
-        m_startStopButton = new JButton("Start Client CM");
+        startStopButton = new JButton("Start Client CM");
         //m_startStopButton.setBackground(Color.LIGHT_GRAY);	// not work on Mac
-        m_startStopButton.addActionListener(myActionListener);
-        m_startStopButton.setEnabled(false);
+        startStopButton.addActionListener(myActionListener);
+        startStopButton.setEnabled(false);
         //add(startStopButton, BorderLayout.NORTH);
-        topButtonPanel.add(m_startStopButton);
+        topButtonPanel.add(startStopButton);
 
-        m_loginLogoutButton = new JButton("Login");
-        m_loginLogoutButton.addActionListener(myActionListener);
-        m_loginLogoutButton.setEnabled(false);
-        topButtonPanel.add(m_loginLogoutButton);
+        loginLogoutButton = new JButton("Login");
+        loginLogoutButton.addActionListener(myActionListener);
+        loginLogoutButton.setEnabled(false);
+        topButtonPanel.add(loginLogoutButton);
 
         printFilesButton = new JButton("Print Files");
         printFilesButton.addActionListener(myActionListener);
@@ -137,8 +136,8 @@ public class CMWinClient extends JFrame {
         }
         else
         {
-            m_startStopButton.setEnabled(true);
-            m_loginLogoutButton.setEnabled(true);
+            startStopButton.setEnabled(true);
+            loginLogoutButton.setEnabled(true);
             printMessage("Client CM starts.\n");
             // 버튼 활성화
             setButtonsAccordingToClientState();
@@ -155,19 +154,19 @@ public class CMWinClient extends JFrame {
 
         switch (nClientState){
             case CMInfo.CM_INIT, CMInfo.CM_CONNECT:
-                m_startStopButton.setText("Stop Client CM");
-                m_loginLogoutButton.setText("Login");
+                startStopButton.setText("Stop Client CM");
+                loginLogoutButton.setText("Login");
                 break;
             case CMInfo.CM_LOGIN, CMInfo.CM_SESSION_JOIN:
-                m_startStopButton.setText("Stop Client CM");
-                m_loginLogoutButton.setText("Logout");
+                startStopButton.setText("Stop Client CM");
+                loginLogoutButton.setText("Logout");
                 printFilesButton.setEnabled(true);
                 fileUpdateButton.setEnabled(true);
                 fileTransferButton.setEnabled(true);
                 break;
             default:
-                m_startStopButton.setText("Start Client CM");
-                m_loginLogoutButton.setText("Login");
+                startStopButton.setText("Start Client CM");
+                loginLogoutButton.setText("Login");
                 break;
         }
         revalidate();
@@ -571,8 +570,8 @@ public class CMWinClient extends JFrame {
     }
 
     private void initializeButtons() {
-        m_startStopButton.setText("Start Client CM");
-        m_loginLogoutButton.setText("Login");
+        startStopButton.setText("Start Client CM");
+        loginLogoutButton.setText("Login");
         revalidate();
         repaint();
     }
