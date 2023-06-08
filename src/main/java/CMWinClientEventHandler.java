@@ -29,10 +29,6 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
         m_lStartTime = 0;
     }
 
-    public void setReqAttachedFile(boolean bReq)
-    {
-        m_bReqAttachedFile = bReq;
-    }
 
     public void setStartTime(long time) {
         startTime = time;
@@ -42,10 +38,6 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
         return startTime;
     }
 
-
-    public String getFilename(String filename) {
-        return filename;
-    }
 
 
     @Override

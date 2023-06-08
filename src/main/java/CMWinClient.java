@@ -184,34 +184,6 @@ public class CMWinClient extends JFrame {
     }
 
 
-    public class MyKeyListener implements KeyListener {
-        @Override
-        public void keyPressed(KeyEvent e) {
-            int key = e.getKeyCode();
-            if(key == KeyEvent.VK_ENTER)
-            {
-                JTextField input = (JTextField)e.getSource();
-                String strText = input.getText();
-                printMessage(strText+"\n");
-                input.setText("");
-                input.requestFocus();
-            }
-            else if(key == KeyEvent.VK_ALT)
-            {
-
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            
-        }
-
-        @Override
-        public void keyTyped(KeyEvent e) {
-            
-        }
-    }
 
     public void printMessage(String strText) {
         StyledDocument styledDocument = jTextPane.getStyledDocument();

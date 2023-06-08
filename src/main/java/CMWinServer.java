@@ -32,7 +32,7 @@ public class CMWinServer extends JFrame {
     CMWinServer() {
         MyActionListener myActionListener = new MyActionListener();
         setTitle("CM Server");
-        setSize(1000,1000);
+        setSize(600,600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
