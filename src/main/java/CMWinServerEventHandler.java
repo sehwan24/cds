@@ -319,6 +319,8 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
                             array2[u][0] = null; //서버 파일,로지컬 클락 배열 초기화
                             array2[u][1] = null;
+                            c_array[i1][0] = null;
+                            c_array[i1][1] = null;
                             printMessage("서버 파일 정보가 삭제되었습니다.\n");
 
                             for(int o = 0; o < 25; o ++) {      //삭제시 파일 사용자 배열 초기화
@@ -403,7 +405,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
         //printMessage("7");
 
-        if((a != 1) && String.valueOf(v).equals(String.valueOf("C"))) {
+        if(String.valueOf(v).equals(String.valueOf("C"))) {
             //서버에 파일이 없으면 서버에 파일 업데이트
             //printMessage(a +"  "+ i);
             File file = new File("C:\\CMProject\\server-file-path\\" + due.getSender() +"\\" + String.valueOf(strArray[2]));
