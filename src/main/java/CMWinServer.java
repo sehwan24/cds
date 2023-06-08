@@ -22,6 +22,7 @@ public class CMWinServer extends JFrame {
     private JTextPane jTextPane2;
     private JButton cmStartStopButton;
     private JButton printFilesButton;
+    private JButton modeButton;
     private CMServerStub cmServerStub;
     private CMWinServerEventHandler cmWinServerEventHandler;
 
@@ -31,13 +32,13 @@ public class CMWinServer extends JFrame {
     CMWinServer() {
         MyActionListener myActionListener = new MyActionListener();
         setTitle("CM Server");
-        setSize(600,600);
+        setSize(1000,1000);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
 
         jTextPane2 = new JTextPane();
-        jTextPane2.setBackground(new Color(0, 53, 254));
+        jTextPane2.setBackground(new Color(143, 206, 156));
         jTextPane2.setEditable(false);
         jTextPane2.setPreferredSize(new Dimension(this.getWidth(), 400));
         add(jTextPane2, BorderLayout.CENTER);
@@ -47,7 +48,7 @@ public class CMWinServer extends JFrame {
         getContentPane().add(centerScroll, BorderLayout.CENTER);
 
         jTextPane = new JTextPane();
-        jTextPane.setBackground(new Color(132, 253, 1));
+        jTextPane.setBackground(new Color(140, 208, 208));
         jTextPane.setEditable(false);
         jTextPane.setPreferredSize(new Dimension(this.getWidth(), 120));
 
@@ -62,6 +63,7 @@ public class CMWinServer extends JFrame {
 
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new FlowLayout());
+        jPanel.setBackground(new Color(189, 151, 189));
         add(jPanel, BorderLayout.NORTH);
 
         cmStartStopButton = new JButton("Start Server CM");
@@ -73,6 +75,11 @@ public class CMWinServer extends JFrame {
         printFilesButton.addActionListener(myActionListener);
         printFilesButton.setEnabled(false);
         jPanel.add(printFilesButton);
+
+        modeButton = new JButton("No Collide Mode(4)");
+        modeButton.addActionListener(myActionListener);
+        modeButton.setEnabled(false);
+        jPanel.add(modeButton);
 
         setVisible(true);
 
@@ -107,6 +114,8 @@ public class CMWinServer extends JFrame {
                 printMessage2(String.valueOf(fileList[i])+"\n");
             }
         }
+
+        printMessage2("------------------------------------\n");
 
 
 
@@ -152,6 +161,16 @@ public class CMWinServer extends JFrame {
             {
                 printFiles();
             }
+            else if (button.getText().equals("No Collide Mode(4)"))
+            {
+                NoCollideMode();
+                button.setText("Collide Mode(3)");
+            }
+            else if (button.getText().equals("Collide Mode(3)"))
+            {
+                CollideMode();
+                button.setText("No Collide Mode(4)");
+            }
         }
     }
 
@@ -187,6 +206,7 @@ public class CMWinServer extends JFrame {
             // change button to "stop CM"
             cmStartStopButton.setEnabled(true);
             printFilesButton.setEnabled(true);
+            modeButton.setEnabled(true);
             cmStartStopButton.setText("Stop Server CM");
         }
 
@@ -211,25 +231,22 @@ public class CMWinServer extends JFrame {
     }
 
 
-
-
-    public class MyMenuListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String strMenu = e.getActionCommand();
-            switch (strMenu) {
-                case "start CM":
-                    startCM();
-                    break;
-                case "terminate CM":
-                    //terminateCM();
-                    break;
-                case "connect to default server":
-                    //connectToDefaultServer();
-                    break;
-            }
-        }
+    String mode = "Push";
+    public void NoCollideMode() {
+        mode = "NoCollide";
     }
+
+    public void CollideMode() {
+        mode = "Push";
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+
+
+
 
     public static void main(String[] args) {
         CMWinServer cmWinServer = new CMWinServer();

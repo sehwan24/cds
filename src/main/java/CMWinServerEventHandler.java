@@ -12,6 +12,7 @@ import kr.ac.konkuk.ccslab.cm.stub.CMClientStub;
 import kr.ac.konkuk.ccslab.cm.stub.CMServerStub;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -90,6 +91,8 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
     int w = 2;
 
+    //String h = "Push";
+
 
     private void processDummyEvent(CMEvent cmEvent)
     {
@@ -99,24 +102,24 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
         //System.out.println("dummy msg: "+due.getDummyInfo());
         printMessage("["+due.getSender()+"] sent a dummy msg: "+due.getDummyInfo()+"\n");
         String s = due.getDummyInfo();
-        printMessage(s);
+        //printMessage(s);
 
 
         if(String.valueOf(s).equals(String.valueOf("Transfer"))) {  //파일 전송 이벤트 받음
             CMMember loginUsers = m_serverStub.getLoginUsers();
-            printMessage("0");
+            //printMessage("0");
             if(loginUsers == null)
             {
                 printMessage("The login users list is null!\n");
                 return;
             }
-            printMessage("1");
+            //printMessage("1");
             Vector<CMUser> loginUserVector = loginUsers.getAllMembers();
             Iterator<CMUser> iter = loginUserVector.iterator();
             CMDummyEvent cmDummyEvent = new CMDummyEvent();
             String s1 = "Transfer§";
             int f = 0;
-            printMessage("2");
+            //printMessage("2");
             while(iter.hasNext())
             {
                 CMUser user = iter.next();
@@ -127,7 +130,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             s1 = s1 + String.valueOf(f);
             cmDummyEvent.setDummyInfo(s1);
             m_serverStub.send(cmDummyEvent, due.getSender());
-            printMessage("3");
+            //printMessage("3");
             return;
 
         }
@@ -137,7 +140,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
 
         String[] strArray = s.split("§");
-        printMessage("!!!!!!!!"+String.valueOf(strArray[0])+" "+String.valueOf(strArray[1]));
+        //printMessage("!!!!!!!!"+String.valueOf(strArray[0])+" "+String.valueOf(strArray[1]));
         String v = String.valueOf(strArray[0]);
 
         a = 0;
@@ -160,8 +163,8 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             Path path2 = file.toPath();
 
             boolean b1 = m_serverStub.pushFile(String.valueOf(path2), c);
-            printMessage("\nresult:");
-            printMessage(String.valueOf(b1));
+            //printMessage("\nresult:");
+            //printMessage(String.valueOf(b1));
 
             return;
         }
@@ -175,8 +178,8 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
             Path path2 = file.toPath();
 
             boolean b1 = file.delete();
-            printMessage("\nresult:");
-            printMessage(String.valueOf(b1));
+            //printMessage("\nresult:");
+            //printMessage(String.valueOf(b1));
 
             return;
         }
@@ -196,7 +199,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                     m_serverStub.send(cmDummyEvent1, String.valueOf(due.getSender()));   //client-path 바꾸라는 더미이벤트 전송
                     File file = new File("C:\\CMProject\\server-file-path\\" + String.valueOf(due.getSender()) + "\\" + String.valueOf(file_user[q][0]));
                     Path path = file.toPath();
-                    printMessage(String.valueOf(path));
+                    //printMessage(String.valueOf(path));
                     //boolean b1 = m_serverStub.pushFile(String.valueOf(path), file_user[q][t + 1]);
                     //printMessage(String.valueOf(b1));
                 }
@@ -226,7 +229,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                     m_serverStub.send(cmDummyEvent1, String.valueOf(due.getSender()));   //더미이벤트 전송
                     File file1 = new File("C:\\CMProject\\server-file-path\\" + String.valueOf(due.getSender()) + "\\" + String.valueOf(file_user[q][0]));
                     Path path = file1.toPath();
-                    printMessage(String.valueOf(path));
+                    //printMessage(String.valueOf(path));
                     //boolean b1 = m_serverStub.pushFile(String.valueOf(path), file_user[q][t + 1]);
                     //printMessage(String.valueOf(b1));
                 }
@@ -245,7 +248,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                 }
             }
             file_user[y][w] = String.valueOf(receiver);
-            printMessage("\n"+String.valueOf(w)+"\n");
+            //printMessage("\n"+String.valueOf(w)+"\n");
 
             w++;
 
@@ -254,37 +257,56 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
         if((String.valueOf(v).equals("M"))||(String.valueOf(v).equals("D"))) {
             i1 = Integer.valueOf(strArray[1]);  //i
-            printMessage(String.valueOf(i1) + "\n");
+            //printMessage(String.valueOf(i1) + "\n");
             c_array[i1][0] = strArray[2];  //파일이름
-            printMessage(c_array[i1][0] + "\n");
+            //printMessage(c_array[i1][0] + "\n");
             c_array[i1][1] = strArray[3];  //로지컬 클락
-            printMessage(c_array[i1][1] + "\n");
+            //printMessage(c_array[i1][1] + "\n");
 
 
             for (int u = 0; u < 200; u++) {
                 if (String.valueOf(array2[u][0]).equals(String.valueOf(c_array[i1][0]))) { //서버에 파일이 존재하면 서버 업데이트
                     if (String.valueOf(v).equals(String.valueOf("M"))) {   //수정인 경우
                         if (Integer.valueOf(array2[u][1]) > Integer.valueOf(c_array[i1][1])) { //서버 로지컬 클락이 더 클 경우
+                            printMessage("클라이언트 파일 이름 : "+c_array[i1][0]);
+                            printMessage("  로지컬 클락 : " + c_array[i1][1]+ "\n");
+                            printMessage("서버 파일 이름 : "+array2[u][0]);
+                            printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             CMDummyEvent cmDummyEvent = new CMDummyEvent();
                             cmDummyEvent.setDummyInfo("M§N");
                             m_serverStub.send(cmDummyEvent, due.getSender());
+                            printMessage("수정 동기화 실패\n");
                         } else {
+                            printMessage("클라이언트 파일 이름 : "+c_array[i1][0]);
+                            printMessage("  로지컬 클락 : " + c_array[i1][1]+ "\n");
+                            printMessage("서버 파일 이름 : "+array2[u][0]);
+                            printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             array2[u][1] = String.valueOf(Integer.valueOf(c_array[i1][1]) + 1); //서버 로지컬 클락 업데이트
-                            printMessage("99\n");
+                            //printMessage("99\n");
+                            printMessage("서버 파일 이름 : "+array2[u][0]);
+                            printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             CMDummyEvent cmDummyEvent = new CMDummyEvent();
                             cmDummyEvent.setDummyInfo("M§Y§" + c_array[i1][0]);
                             m_serverStub.send(cmDummyEvent, due.getSender());
+                            printMessage("동기화 요청 수락, 파일 수정 가능\n");
                         }
                         a = 1;
                         printMessage(array2[u][0] + "\n" + array2[u][1] + "\n");
                     } else if (String.valueOf(v).equals(String.valueOf("D"))) {  //삭제인 경우
                         if (Integer.valueOf(array2[u][1]) > Integer.valueOf(c_array[i1][1])) { //서버 로지컬 클락이 더 클 경우
-                            printMessage("동기화 실패\n");
+                            printMessage("클라이언트 파일 이름 : "+c_array[i1][0]);
+                            printMessage("  로지컬 클락 : " + c_array[i1][1]+ "\n");
+                            printMessage("서버 파일 이름 : "+array2[u][0]);
+                            printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             CMDummyEvent cmDummyEvent = new CMDummyEvent();
                             cmDummyEvent.setDummyInfo("D§N");
                             m_serverStub.send(cmDummyEvent, due.getSender());
+                            printMessage("삭제 동기화 실패\n");
                         } else {
-                            printMessage("삭제\n");
+                            printMessage("클라이언트 파일 이름 : "+c_array[i1][0]);
+                            printMessage("  로지컬 클락 : " + c_array[i1][1]+ "\n");
+                            printMessage("서버 파일 이름 : "+array2[u][0]);
+                            printMessage("  로지컬 클락 : " + array2[u][1]+ "\n");
                             String str = String.valueOf(due.getSender());
                             Path path = Paths.get("C:\\CMProject\\server-file-path");
                             Path path1 = path.resolve(str);
@@ -292,11 +314,12 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
                             File file = new File(String.valueOf(path2));
                             boolean delete = file.delete();
                             if (delete == true) {
-                                printMessage("삭제 성공\n");
+                                printMessage("서버 파일 삭제 성공, 삭제 동기화 성공\n");
                             }
 
                             array2[u][0] = null; //서버 파일,로지컬 클락 배열 초기화
                             array2[u][1] = null;
+                            printMessage("서버 파일 정보가 삭제되었습니다.\n");
 
                             for(int o = 0; o < 25; o ++) {      //삭제시 파일 사용자 배열 초기화
                                 file_user[u][o] = null;
@@ -315,7 +338,7 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
 
 
-        printMessage("9");
+        //printMessage("9");
 
 
         /*if(String.valueOf(strArray[0]).equals(String.valueOf("Transfer2"))) {
@@ -326,9 +349,9 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
         if(String.valueOf(v).equals(String.valueOf("Share"))) {  //파일공유
             printMessage("Server get file\n");
             String a = String.valueOf(strArray[1]);  //누구한테 줄건지
-            printMessage(a);
+            //printMessage(a);
             String b = String.valueOf(strArray[2]);  //file name
-            printMessage(b);
+            //printMessage(b);
 
             String t = due.getSender();
 
@@ -347,10 +370,20 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
             boolean b1 = m_serverStub.pushFile(String.valueOf(path2),a);
 
+            String o = null;
+
+            for(int f = 0; f < 200; f++) {
+                if(String.valueOf(array2[f][0]).equals(String.valueOf(b))) {
+                    o = array2[f][1];
+                }
+            }
+
             if(b1) {
                 printMessage("filepush success\n");
                 CMDummyEvent cmDummyEvent = new CMDummyEvent();
-                cmDummyEvent.setDummyInfo("Push§"+ b);
+                String h = m_server.getMode();
+                cmDummyEvent.setDummyInfo(h + "§"+ b + "§" + String.valueOf(o));
+                printMessage(b + o);
                 m_serverStub.send(cmDummyEvent, a);
 
             }
@@ -362,36 +395,56 @@ public class CMWinServerEventHandler implements CMAppEventHandler {
 
         }
 
-        printMessage("8");
+        //printMessage("8");
 
 
 
 
 
-        printMessage("7");
+        //printMessage("7");
 
         if((a != 1) && String.valueOf(v).equals(String.valueOf("C"))) {
             //서버에 파일이 없으면 서버에 파일 업데이트
-            printMessage(a +"  "+ i);
+            //printMessage(a +"  "+ i);
+            File file = new File("C:\\CMProject\\server-file-path\\" + due.getSender() +"\\" + String.valueOf(strArray[2]));
 
-            i1 = Integer.valueOf(strArray[1]);  //i는 클라이언트 파일 인덱스번호
-            printMessage(String.valueOf(i1) + "\n");
-            c_array[i1][0] = strArray[2];  //파일이름
-            printMessage(c_array[i1][0] + "\n");
-            c_array[i1][1] = strArray[3];  //로지컬 클락
-            printMessage(c_array[i1][1] + "\n");
+            if(Files.exists(file.toPath())){
+                printMessage("파일 생성 동기화 실패\n");
+                if(Files.isRegularFile(file.toPath())) {
+                    printMessage("서버에 동일한 파일이 존재합니다.\n");
+                }
+            }
+            else {
+                //boolean server = cmClientStub.pushFile(String.valueOf(path4), "SERVER");
+                i1 = Integer.valueOf(strArray[1]);  //i는 클라이언트 파일 인덱스번호
+                //printMessage(String.valueOf(i1) + "\n");
+                c_array[i1][0] = strArray[2];  //파일이름
+                printMessage("클라이언트 파일 이름 : "+c_array[i1][0]);
+                //printMessage(c_array[i1][0] + "\n");
+                c_array[i1][1] = strArray[3];  //로지컬 클락
+                //printMessage(c_array[i1][1] + "\n");
+                printMessage("  로지컬 클락 : " + c_array[i1][1]+ "\n");
 
-            array2[i][0] = c_array[i1][0];
-            printMessage(array2[i][0]);
-            array2[i][1] = String.valueOf(Integer.valueOf(c_array[i1][1])+1);  //서버 로지컬 클락 업데이트
-            printMessage(array2[i][0]+"\n"+array2[i][1]+"\n");
+                array2[i][0] = c_array[i1][0];
+                printMessage("서버 동기화\n서버 파일 이릅 : " + array2[i][0]);
+                array2[i][1] = String.valueOf(Integer.valueOf(c_array[i1][1])+1);  //서버 로지컬 클락 업데이트
+                printMessage("  로지컬 클락 : " + array2[i][1]+"\n");
 
-            file_user[i][0] = c_array[i1][0];
-            file_user[i][1] = strArray[4];    //파일 생성자, 첫공유자
-            printMessage(file_user[i][1]);
+                file_user[i][0] = c_array[i1][0];
+                file_user[i][1] = strArray[4];    //파일 생성자, 첫공유자
+                //printMessage(file_user[i][1]);
+
+                CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
+                cmDummyEvent2.setDummyInfo("CanPush1§" + String.valueOf(strArray[2]));
+                m_serverStub.send(cmDummyEvent2, due.getSender());
+
+                printMessage("동기화 요청 수락, 파일 전송 가능\n");
+            }
+
+
         }
 
-        printMessage("6");
+        //printMessage("6");
 
         i++;
         return;

@@ -43,6 +43,11 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
     }
 
 
+    public String getFilename(String filename) {
+        return filename;
+    }
+
+
     @Override
     public void processEvent(CMEvent cmEvent) {
         switch (cmEvent.getType())
@@ -70,9 +75,22 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
 
         String s = due.getDummyInfo();
 
+        if(String.valueOf(s).equals("NoCollide")) {
+            return;
+        }
+
 
 
         String[] strArray = s.split("§");
+
+        if(String.valueOf(strArray[0]).equals("CanPush1")) {
+            CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
+            String s1 = interInfo.getMyself().getName();
+            File file = new File("C:\\CMProject\\client-file-path-" + s1 +"\\" + String.valueOf(strArray[1]));
+            Path path = file.toPath();
+            m_clientStub.pushFile(String.valueOf(path), "SERVER");
+            printMessage("생성 동기화 성공\n");
+        }
 
         if(String.valueOf(strArray[0]).equals("Path")) {
             CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
@@ -80,7 +98,7 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
             cmDummyEvent2.setDummyInfo("ToCli§"+s1+"§"+String.valueOf(strArray[2]));   //클라이언트에게
             boolean send1 = m_clientStub.send(cmDummyEvent2, String.valueOf(strArray[1]));
-            printMessage(String.valueOf(send1));
+            //printMessage(String.valueOf(send1));
             return;
         }
 
@@ -90,7 +108,7 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
             cmDummyEvent2.setDummyInfo("ToCliD§"+s1+"§"+String.valueOf(strArray[2]));   //클라이언트에게
             boolean send1 = m_clientStub.send(cmDummyEvent2, String.valueOf(strArray[1]));
-            printMessage(String.valueOf(send1));
+            //printMessage(String.valueOf(send1));
             return;
         }
 
@@ -98,9 +116,9 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
             String s1 = interInfo.getMyself().getName();
             File file1 = new File(".\\client-file-path-" + s1);
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             m_clientStub.setTransferedFileHome(file1.toPath());
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             String s2 = String.valueOf(strArray[2]);
             File file = new File("C:\\CMProject\\client-file-path-" + String.valueOf(strArray[1])+"\\"+s2);
             Path path = file.toPath();
@@ -116,14 +134,14 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
             String s1 = interInfo.getMyself().getName();
             File file1 = new File(".\\client-file-path-" + s1);
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             m_clientStub.setTransferedFileHome(file1.toPath());
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             String s2 = String.valueOf(strArray[2]);
             File file = new File("C:\\CMProject\\client-file-path-" + s1+"\\"+s2);
-            printMessage(String.valueOf(file));
+            //printMessage(String.valueOf(file));
             boolean delete = file.delete();
-            printMessage(String.valueOf(delete));
+            //printMessage(String.valueOf(delete));
             /*Path path = file.toPath();
             m_clientStub.pushFile(String.valueOf(path), "SERVER");*/
             CMDummyEvent cmDummyEvent = new CMDummyEvent();
@@ -138,9 +156,9 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
             String s1 = interInfo.getMyself().getName();
             File file1 = new File(".\\client-file-path-" + s1);
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             m_clientStub.setTransferedFileHome(file1.toPath());
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             String s2 = String.valueOf(strArray[3]);
             m_clientStub.pushFile(s2, "SERVER");
 
@@ -153,7 +171,9 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
             for(int h = 0; h < (length-2); h++) {
                 printMessage(strArray[1 + h] + "  ");
             }
+            printMessage("\n");
             return;
+
         }
 
         /*if(String.valueOf(strArray[0]).equals("Transfer2")) {
@@ -167,7 +187,6 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
 
         if(String.valueOf(strArray[1]).equals("Y")){
             if(String.valueOf(strArray[0]).equals("M")) {
-                printMessage("수정 동기화 성공\n");
                 //Path path = Paths.get("C:\\CMProject\\client-file-path");
                 CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
                 String s1 = interInfo.getMyself().getName();
@@ -177,6 +196,7 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
                 Path path4 = path2.resolve(strArray[2]);
                 //path4 print go
                 m_clientStub.pushFile(String.valueOf(path4), "SERVER");
+                printMessage("수정 동기화 성공\n");
             }
             else if (String.valueOf(strArray[0]).equals("D"))
             {
@@ -190,8 +210,17 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
         }
 
 
+
+
         if(String.valueOf(strArray[0]).equals("Push")) {
-            printMessage("Pull request\n");
+
+            //printMessage(strArray[1]+strArray[2]);
+            int i = Integer.valueOf(strArray[2]);
+            //printMessage(String.valueOf(i));
+            m_client.ClockUpdate(String.valueOf(strArray[1]), i);
+
+
+
             return;
             /*CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
             String s1 = interInfo.getMyself().getName();
@@ -224,17 +253,17 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
         CMFileEvent fe = (CMFileEvent) cmEvent;
         if(!fe.getFileReceiver().equals("SERVER")) {
             File file1 = new File(".\\client-file-path-" + fe.getFileReceiver());
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
             m_clientStub.setTransferedFileHome(file1.toPath());
-            printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+            //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
         }
         int nOption = -1;
         switch(fe.getID())
         {
 
             case CMFileEvent.END_FILE_TRANSFER_ACK:
-                printMessage("End file transfer!!!");
-                printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
+                printMessage("End file transfer\n");
+                //printMessage(String.valueOf(m_clientStub.getTransferedFileHome()));
 
                 CMInteractionInfo interInfo = m_clientStub.getCMInfo().getInteractionInfo();
                 /*String s1 = interInfo.getMyself().getName();
@@ -256,7 +285,7 @@ public class CMWinClientEventHandler implements CMAppEventHandler {
                 break;
 
             case CMFileEvent.REQUEST_PERMIT_PULL_FILE:
-                printMessage("\npermit request\n");
+                //printMessage("\npermit request\n");
                 break;
 
 

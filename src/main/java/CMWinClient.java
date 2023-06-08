@@ -20,7 +20,6 @@ import static java.lang.Thread.sleep;
 public class CMWinClient extends JFrame {
     private JTextPane jTextPane;
     private JTextPane jTextPane2;
-    private JTextField jTextField;
     private JButton m_startStopButton;
     private JButton m_loginLogoutButton;
     private JButton printFilesButton;
@@ -33,7 +32,6 @@ public class CMWinClient extends JFrame {
 
 
     CMWinClient() {
-        MyKeyListener myKeyListener = new MyKeyListener();
         MyActionListener myActionListener = new MyActionListener();
         setTitle("CM Client");
         setSize(600, 600);
@@ -43,7 +41,7 @@ public class CMWinClient extends JFrame {
         //setLayout(new BorderLayout());
 
         jTextPane2 = new JTextPane();
-        jTextPane2.setBackground(new Color(0, 53, 254));
+        jTextPane2.setBackground(new Color(143, 206, 156));
         jTextPane2.setEditable(false);
         jTextPane2.setPreferredSize(new Dimension(this.getWidth(), 400));
         add(jTextPane2, BorderLayout.CENTER);
@@ -53,7 +51,7 @@ public class CMWinClient extends JFrame {
         getContentPane().add(centerScroll, BorderLayout.CENTER);
 
         jTextPane = new JTextPane();
-        jTextPane.setBackground(new Color(0, 253, 44));
+        jTextPane.setBackground(new Color(140, 208, 208));
         //m_outTextPane.setForeground(Color.WHITE);
         jTextPane.setEditable(false);
         jTextPane.setPreferredSize(new Dimension(this.getWidth(), 120));
@@ -70,7 +68,7 @@ public class CMWinClient extends JFrame {
         add(jTextField, BorderLayout.SOUTH);*/
 
         JPanel topButtonPanel = new JPanel();
-        topButtonPanel.setBackground(new Color(253, 0, 127));
+        topButtonPanel.setBackground(new Color(189, 151, 189));
         topButtonPanel.setLayout(new FlowLayout());
         add(topButtonPanel, BorderLayout.NORTH);
 
@@ -142,7 +140,7 @@ public class CMWinClient extends JFrame {
             m_startStopButton.setEnabled(true);
             m_loginLogoutButton.setEnabled(true);
             printMessage("Client CM starts.\n");
-            // change the appearance of buttons in the client window frame
+            // 버튼 활성화
             setButtonsAccordingToClientState();
         }
 
@@ -195,8 +193,6 @@ public class CMWinClient extends JFrame {
                 JTextField input = (JTextField)e.getSource();
                 String strText = input.getText();
                 printMessage(strText+"\n");
-                // parse and call CM API
-                //processInput(strText);
                 input.setText("");
                 input.requestFocus();
             }
@@ -311,7 +307,7 @@ public class CMWinClient extends JFrame {
         if (option == JOptionPane.OK_OPTION)
         {
             username = usernameField.getText();
-            password = new String(passwordField.getPassword()); // security problem?
+            password = new String(passwordField.getPassword());
 
             cmWinClientEventHandler.setStartTime(System.currentTimeMillis());
             bRequestResult = cmClientStub.loginCM(username, password);
@@ -389,25 +385,13 @@ public class CMWinClient extends JFrame {
                     printMessage(pth.getFileName() + " 생성\n");
                     CMDummyEvent cmDummyEvent = new CMDummyEvent();
                     array[i][0] = String.valueOf(pth.getFileName());      //i는 클라이언트 파일배열
-                    printMessage(array[i][0]+ "\n");
+                    printMessage("클라이언트 파일 이름 : "+array[i][0]);
                     array[i][1] = String.valueOf(1);
-                    printMessage(array[i][1]+ "\n");
+                    printMessage("  로지컬 클락 : " + array[i][1]+ "\n");
                     cmDummyEvent.setDummyInfo("C" + "§" + String.valueOf(i) +"§"+ array[i][0] +"§" + array[i][1]+"§"+s);
                     cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName());
-                    if(Files.exists(path3)){
-                        printMessage("동기화 실패\n");
-                        if(Files.isRegularFile(path3)) {
-                            printMessage("서버에 동일한 파일이 존재합니다.\n");
-                        }
-                    }
-                    else {
-                        printMessage(String.valueOf(path4));
-                        boolean server = cmClientStub.pushFile(String.valueOf(path4), "SERVER");
-                        printMessage(String.valueOf(server));
-                        printMessage("동기화 성공1\n");
-                    }
+                    printMessage("파일 생성 동기화 요청\n");
                     i++;
-                    printMessage(String.valueOf(i));
                     return;
                 } else if (kind.equals(StandardWatchEventKinds.ENTRY_DELETE)) {
                     //파일 삭제 시
@@ -417,7 +401,9 @@ public class CMWinClient extends JFrame {
                     for(int k = 0; k < 50; k++) {  //몇 번 파일 삭제됐나 확인
                         if(String.valueOf(pth.getFileName()).equals(array[k][0])){    //클라이언트
                             array[k][1] = String.valueOf(Integer.valueOf(array[k][1])+1);  //로지컬 클락 업데이트
-                            printMessage("\n"+array[k][0]+"\n"+array[k][1]+"\n");
+                            printMessage("클라이언트 파일 이름 : "+array[k][0]);
+                            printMessage("  로지컬 클락 : " + array[k][1]+ "\n");
+                            //printMessage("\n"+array[k][0]+"\n"+array[k][1]+"\n");
                             n = k;
                             v1 = 1;
                         }
@@ -425,8 +411,10 @@ public class CMWinClient extends JFrame {
                     if(v1 == 1) {
                         cmDummyEvent.setDummyInfo("D" + "§" + String.valueOf(n) + "§" + array[n][0] + "§" + array[n][1]);
                         cmClientStub.send(cmDummyEvent, cmClientStub.getDefaultServerName()); //서버와 통신
+                        printMessage("파일 삭제 동기화 요청\n");
                         array[n][0] = null;
                         array[n][1] = null;  //삭제했으니 파일명, 로지컬 클락 배열 초기화
+                        printMessage("클라이언트 파일 정보가 삭제되었습니다.\n");
                     }
                     else {
                         CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
@@ -442,13 +430,15 @@ public class CMWinClient extends JFrame {
                     for(int k = 0; k < 50; k++) {  //몇 번 파일 수정됐나 확인
                         if(String.valueOf(pth.getFileName()).equals(array[k][0])){    //클라이언트
                             array[k][1] = String.valueOf(Integer.valueOf(array[k][1])+1);  //로지컬 클락 업데이트
-                            printMessage("\n"+array[k][0]+"\n"+array[k][1]+"\n");
+                            printMessage("클라이언트 파일 이름 : "+array[k][0]);
+                            printMessage("  로지컬 클락 : " + array[k][1]+ "\n");
                             n = k;
                             v = 1;
                         }
                     }
                     if(v == 1) {
                         cmDummyEvent.setDummyInfo("M" + "§" + String.valueOf(n) + "§" + array[n][0] + "§" + array[n][1]);
+                        printMessage("파일 수정 동기화 요청\n");
                     }
                     else {
                         cmDummyEvent.setDummyInfo("M2§"+pth.getFileName());
@@ -470,6 +460,17 @@ public class CMWinClient extends JFrame {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+
+    public void ClockUpdate(String filename, int clock) {
+        array[i][0] = filename;
+        array[i][1] = String.valueOf(clock+1);
+
+        printMessage("클라이언트 파일 이름 : "+array[i][0]);
+        printMessage("  로지컬 클락 : " + array[i][1]+ "\n");
+
     }
 
 
@@ -519,7 +520,7 @@ public class CMWinClient extends JFrame {
         int fcRet = fc.showOpenDialog(null);
         if(fcRet != JFileChooser.APPROVE_OPTION) return;
         File file = fc.getSelectedFile();
-        printMessage(file.getPath());
+        //printMessage(file.getPath());
 
         File file1 = new File(".\\client-file-path-" + strusername);
         cmClientStub.setTransferedFileHome(file1.toPath());
@@ -557,18 +558,18 @@ public class CMWinClient extends JFrame {
         CMDummyEvent cmDummyEvent2 = new CMDummyEvent();
         cmDummyEvent2.setDummyInfo("Toclient§"+s1+"§"+strusername+"§"+pth3);
         boolean send1 = cmClientStub.send(cmDummyEvent2, strusername);
-        printMessage(String.valueOf(send1));
+        //printMessage(String.valueOf(send1));
 
         cmClientStub.pushFile(String.valueOf(pth3), "SERVER");   //서버로 선택된 파일 전송
 
 
 
         CMDummyEvent cmDummyEvent1 = new CMDummyEvent();
-        printMessage(file.getName() + "\n!@!#!#\n");
+        //printMessage(file.getName() + "\n!@!#!#\n");
         cmDummyEvent1.setDummyInfo("Share§" + String.valueOf(strusername) + "§" + String.valueOf(file.getName()));
 
         boolean send = cmClientStub.send(cmDummyEvent1, cmClientStub.getDefaultServerName());
-        printMessage(String.valueOf(send));
+        //printMessage(String.valueOf(send));
 
 
     }
@@ -592,7 +593,7 @@ public class CMWinClient extends JFrame {
             }
         }
 
-        printMessage("------------------------------------------------\n");
+        printMessage2("------------------------------------------------\n");
 
 
     }
